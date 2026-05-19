@@ -339,61 +339,9 @@ tr:hover td { background: var(--surface2); }
   .charts-row { grid-template-columns: 1fr; }
   .bottom-row { grid-template-columns: 1fr; }
 }
-
-/* ── LOGIN SCREEN ── */
-.login-screen {
-  position: fixed; inset: 0; z-index: 9999;
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
-  display: flex; align-items: center; justify-content: center;
-}
-.login-screen.hide { display: none; }
-.login-box {
-  background: var(--surface); border-radius: var(--radius);
-  padding: 48px 40px; width: 400px; max-width: 90vw;
-  box-shadow: 0 25px 80px rgba(0,0,0,0.4);
-}
-.login-logo { text-align: center; margin-bottom: 36px; }
-.login-logo .icon { font-size: 48px; margin-bottom: 16px; }
-.login-logo .co { font-size: 26px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
-.login-logo .sub { font-size: 14px; color: var(--text3); }
-.login-form { display: flex; flex-direction: column; gap: 14px; }
-.login-input {
-  font-family: var(--sans); font-size: 15px; padding: 14px 18px;
-  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-  background: var(--surface2); outline: none; transition: all 0.2s;
-}
-.login-input:focus { border-color: var(--accent); background: var(--surface); }
-.login-btn {
-  background: var(--navy); color: #fff; font-size: 15px; font-weight: 600;
-  padding: 14px; border: none; border-radius: var(--radius-sm); cursor: pointer;
-  transition: all 0.2s; margin-top: 8px;
-}
-.login-btn:hover { background: var(--navy2); transform: translateY(-1px); }
-.login-btn:active { transform: translateY(0); }
-.login-error {
-  color: var(--red); font-size: 13px; text-align: center;
-  padding: 10px; background: #fff1f1; border-radius: var(--radius-sm);
-  margin-top: 8px; display: none; border: 1px solid #fca5a5;
-}
 </style>
 </head>
 <body>
-
-<div class="login-screen" id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">
-      <div class="icon">🏢</div>
-      <div class="co">(주)드림솔</div>
-      <div class="sub">시설관리 통합시스템</div>
-    </div>
-    <div class="login-form">
-      <input type="text" id="login-id" class="login-input" placeholder="아이디" autocomplete="username" autofocus>
-      <input type="password" id="login-pw" class="login-input" placeholder="비밀번호" autocomplete="current-password">
-      <button class="login-btn" onclick="doLogin()">로그인</button>
-      <div class="login-error" id="login-error">⚠️ 아이디 또는 비밀번호가 올바르지 않습니다.</div>
-    </div>
-  </div>
-</div>
 
 <div class="shell">
   <aside class="sidebar">
@@ -425,322 +373,307 @@ tr:hover td { background: var(--surface2); }
   <main class="main">
 
     <div id="page-dashboard" class="page active">
-    <div class="topbar">
-      <h1>통합 대시보드</h1>
-      <div class="topbar-right">
-        <div class="date-chip" id="today-chip"></div>
-        <button class="btn-export" onclick="exportToExcel('dashboard')">📊 Excel 내보내기</button>
-        <button class="btn-primary" onclick="showModal('task')">+ 업무 추가</button>
-        <button class="btn-primary" onclick="showModal('cost')" style="background:var(--green)">+ 비용 추가</button>
-      </div>
-    </div>
-
-    <div id="alert-container"></div>
-
-    <div class="section-title">성과 KPI</div>
-    <div class="kpi-grid">
-      <div class="kpi-card blue">
-        <div class="kpi-label">업무 완료율</div>
-        <div class="kpi-value" id="kpi-rate">0<span>%</span></div>
-        <div class="kpi-trend up" id="kpi-rate-sub">—</div>
-      </div>
-      <div class="kpi-card green">
-        <div class="kpi-label">누적 비용 절감</div>
-        <div class="kpi-value" id="kpi-save">₩0</div>
-        <div class="kpi-trend up" id="kpi-save-sub">목표 대비 —</div>
-      </div>
-      <div class="kpi-card red">
-        <div class="kpi-label">미착수 업무</div>
-        <div class="kpi-value" id="kpi-todo">0<span>건</span></div>
-        <div class="kpi-trend neu" id="kpi-todo-sub">즉시 처리 필요</div>
-      </div>
-      <div class="kpi-card amber">
-        <div class="kpi-label">설비 가동률</div>
-        <div class="kpi-value" id="kpi-uptime">0<span>%</span></div>
-        <div class="kpi-trend neu" id="kpi-uptime-sub">—</div>
-      </div>
-      <div class="kpi-card purple">
-        <div class="kpi-label">법정점검 준수율</div>
-        <div class="kpi-value" id="kpi-compliance">0<span>%</span></div>
-        <div class="kpi-trend up" id="kpi-compliance-sub">—</div>
-      </div>
-      <div class="kpi-card navy">
-        <div class="kpi-label">평균 처리기간</div>
-        <div class="kpi-value" id="kpi-days">2.4<span>일</span></div>
-        <div class="kpi-trend up">▲ 전월 대비 –0.8일</div>
-      </div>
-    </div>
-
-    <div class="section-title">법정점검 D-Day 알림</div>
-    <div class="dday-strip" id="dday-strip">
-      <div class="dday-add-btn" onclick="showModal('dday')">＋ 점검 추가</div>
-    </div>
-
-    <div class="section-title">월별 성과 분석</div>
-    <div class="charts-row">
-      <div class="chart-card">
-        <div class="ct">업무 완료 추이 (최근 6개월)</div>
-        <div class="chart-legend">
-          <div class="leg"><div class="dot" style="background:#3b82f6"></div>완료</div>
-          <div class="leg"><div class="dot" style="background:#fca5a5"></div>미착수/진행</div>
-        </div>
-        <div style="position:relative;height:150px">
-          <canvas id="bar-chart" role="img" aria-label="월별 업무 완료 건수"></canvas>
-        </div>
-      </div>
-      <div class="chart-card">
-        <div class="ct">비용 절감 누적 (만원)</div>
-        <div class="chart-legend">
-          <div class="leg"><div class="dot" style="background:#10b981"></div>절감액 누적</div>
-        </div>
-        <div style="position:relative;height:150px">
-          <canvas id="line-chart" role="img" aria-label="비용 절감 누적 추이"></canvas>
-        </div>
-      </div>
-      <div class="chart-card">
-        <div class="ct">업무 유형별 현황</div>
-        <div class="ring-wrap">
-          <canvas id="donut-chart" width="100" height="100" role="img" aria-label="업무 유형 비율"></canvas>
-          <div class="ring-stats" id="ring-stats"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-title">업무 통합 관리</div>
-    <div class="table-card">
-      <div class="table-header">
-        <div class="th">민원 / 설비 / 점검 / 공사</div>
-        <div class="filter-pills">
-          <div class="pill active" onclick="filterTask('all',this)">전체</div>
-          <div class="pill" onclick="filterTask('미착수',this)">미착수</div>
-          <div class="pill" onclick="filterTask('진행중',this)">진행중</div>
-        </div>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>구분</th><th>대상 / 위치</th><th>상세 내역</th>
-            <th>업체 / 담당</th><th>접수일</th><th>상태</th>
-          </tr>
-        </thead>
-        <tbody id="task-tbody"></tbody>
-      </table>
-      <div class="add-row-btn" onclick="showModal('task')">＋ 업무 추가</div>
-      <div class="done-toggle-btn" id="done-toggle" onclick="toggleDone()">
-        ▸ 완료 항목 보기
-      </div>
-    </div>
-
-    <div class="bottom-row">
-      <div class="table-card">
-        <div class="table-header">
-          <div class="th">비용 절감 (Cost Save) 현황</div>
-          <button class="btn-primary" onclick="showModal('cost')" style="font-size:10px;padding:4px 10px">+ 추가</button>
-        </div>
-        <table>
-          <thead>
-            <tr><th>공사명</th><th>최초 견적</th><th>실행가</th><th>절감액</th></tr>
-          </thead>
-          <tbody id="cost-tbody"></tbody>
-        </table>
-        <div style="padding:10px 18px;font-size:11px;color:var(--text3);border-top:1px solid var(--border2);display:flex;justify-content:space-between">
-          <span>누적 총 절감액</span>
-          <span class="cost-save-val" id="cost-total">₩0</span>
-        </div>
-      </div>
-
-      <div class="table-card">
-        <div class="table-header">
-          <div class="th">업체 평가 히스토리</div>
-          <button class="btn-primary" onclick="showModal('vendor')" style="font-size:10px;padding:4px 10px">+ 추가</button>
-        </div>
-        <table>
-          <thead>
-            <tr><th>업체명</th><th>공사 유형</th><th>평점</th><th>메모</th></tr>
-          </thead>
-          <tbody id="vendor-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-    </div> <div id="page-tasks" class="page">
       <div class="topbar">
-        <h1>업무 목록</h1>
+        <h1>통합 대시보드</h1>
         <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('tasks')">📊 Excel 내보내기</button>
+          <div class="date-chip" id="today-chip"></div>
+          <button class="btn-export" onclick="exportToExcel('dashboard')">📊 Excel 내보내기</button>
           <button class="btn-primary" onclick="showModal('task')">+ 업무 추가</button>
+          <button class="btn-primary" onclick="showModal('cost')" style="background:var(--green)">+ 비용 추가</button>
         </div>
       </div>
-      <div class="section-title">전체 업무 현황</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
-        <div class="kpi-card blue"><div class="kpi-label">전체</div><div class="kpi-value" id="p-total">0<span>건</span></div></div>
-        <div class="kpi-card red"><div class="kpi-label">미착수</div><div class="kpi-value" id="p-todo2">0<span>건</span></div></div>
-        <div class="kpi-card amber"><div class="kpi-label">진행중</div><div class="kpi-value" id="p-wip">0<span>건</span></div></div>
-        <div class="kpi-card green"><div class="kpi-label">완료</div><div class="kpi-value" id="p-done2">0<span>건</span></div></div>
+
+      <div id="alert-container"></div>
+
+      <div class="section-title">성과 KPI</div>
+      <div class="kpi-grid">
+        <div class="kpi-card blue">
+          <div class="kpi-label">업무 완료율</div>
+          <div class="kpi-value" id="kpi-rate">0<span>%</span></div>
+          <div class="kpi-trend up" id="kpi-rate-sub">—</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">누적 비용 절감</div>
+          <div class="kpi-value" id="kpi-save">₩0</div>
+          <div class="kpi-trend up" id="kpi-save-sub">목표 대비 —</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">미착수 업무</div>
+          <div class="kpi-value" id="kpi-todo">0<span>건</span></div>
+          <div class="kpi-trend neu" id="kpi-todo-sub">즉시 처리 필요</div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-label">설비 가동률</div>
+          <div class="kpi-value" id="kpi-uptime">0<span>%</span></div>
+          <div class="kpi-trend neu" id="kpi-uptime-sub">—</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-label">법정점검 준수율</div>
+          <div class="kpi-value" id="kpi-compliance">0<span>%</span></div>
+          <div class="kpi-trend up" id="kpi-compliance-sub">—</div>
+        </div>
+        <div class="kpi-card navy">
+          <div class="kpi-label">평균 처리기간</div>
+          <div class="kpi-value" id="kpi-days">2.4<span>일</span></div>
+          <div class="kpi-trend up">▲ 전월 대비 –0.8일</div>
+        </div>
       </div>
-      <div class="table-card">
-        <div class="table-header">
-          <div class="th">업무 전체 목록</div>
-          <div class="filter-pills">
-            <div class="pill active" onclick="filterTask2('all',this)">전체</div>
-            <div class="pill" onclick="filterTask2('민원',this)">민원</div>
-            <div class="pill" onclick="filterTask2('설비',this)">설비</div>
-            <div class="pill" onclick="filterTask2('점검',this)">점검</div>
-            <div class="pill" onclick="filterTask2('공사',this)">공사</div>
+
+      <div class="section-title">법정점검 D-Day 알림</div>
+      <div class="dday-strip" id="dday-strip">
+        <div class="dday-add-btn" onclick="showModal('dday')">＋ 점검 추가</div>
+      </div>
+
+      <div class="section-title">월별 성과 분석</div>
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="ct">업무 완료 추이 (최근 6개월)</div>
+          <div class="chart-legend">
+            <div class="leg"><div class="dot" style="background:#3b82f6"></div>완료</div>
+            <div class="leg"><div class="dot" style="background:#fca5a5"></div>미착수/진행</div>
+          </div>
+          <div style="position:relative;height:150px">
+            <canvas id="bar-chart"></canvas>
           </div>
         </div>
-        <table>
-          <thead><tr><th>구분</th><th>대상/위치</th><th>상세 내역</th><th>업체/담당</th><th>접수일</th><th>상태</th><th>삭제</th></tr></thead>
-          <tbody id="task-tbody2"></tbody>
+        <div class="chart-card">
+          <div class="ct">누적 비용 절감액 (만원)</div>
+          <div style="position:relative;height:170px">
+            <canvas id="line-chart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="ct">민원/보수 유형별 현황</div>
+          <div class="ring-wrap">
+            <div style="position:relative;width:110px;height:110px">
+              <canvas id="ring-chart"></canvas>
+            </div>
+            <div class="ring-stats" id="ring-stats"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="th">실시간 주요 시설 업무 현황</div>
+          <div class="done-toggle-btn" onclick="toggleShowDone()">
+            <span id="toggle-icon">👁️</span> <span id="toggle-txt">완료된 업무 숨기기</span>
+          </div>
+        </div>
+        <table id="dash-task-table">
+          <thead>
+            <tr>
+              <th>구분</th>
+              <th>위치/설비</th>
+              <th>보수 내용 및 조치 사항</th>
+              <th>협력업체</th>
+              <th>상태</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
         </table>
-        <div class="add-row-btn" onclick="showModal('task')">＋ 업무 추가</div>
       </div>
     </div>
 
+    <div id="page-tasks" class="page">
+      <div class="topbar">
+        <h1>업무 목록 관리</h1>
+        <div class="topbar-right">
+          <button class="btn-export" onclick="exportToExcel('task')">📊 Excel 저장</button>
+          <button class="btn-primary" onclick="showModal('task')">+ 새 업무 등록</button>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="th">시설 민원 및 보수 내역 일지</div>
+          <div class="filter-pills" id="task-filters">
+            <button class="pill active" onclick="filterTasks('ALL')">전체</button>
+            <button class="pill" onclick="filterTasks('미착수')">미착수</button>
+            <button class="pill" onclick="filterTasks('진행중')">진행중</button>
+            <button class="pill" onclick="filterTasks('완료')">완료</button>
+          </div>
+        </div>
+        <table id="main-task-table">
+          <thead>
+            <tr>
+              <th>유형</th>
+              <th>등록일</th>
+              <th>위치/대상</th>
+              <th>상세 내용</th>
+              <th>담당/업체</th>
+              <th>완료일</th>
+              <th>상태 변경</th>
+              <th>삭제</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="add-row-btn" onclick="showModal('task')">＋ 새로운 시설 보수 정비 내역 기록 추가...</div>
+      </div>
+    </div>
 
     <div id="page-dday" class="page">
       <div class="topbar">
-        <h1>법정점검 일정</h1>
+        <h1>법정 의무 검사 일정</h1>
         <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('dday')">📊 Excel 내보내기</button>
-          <button class="btn-primary" onclick="showModal('dday')">+ 점검 추가</button>
+          <button class="btn-export" onclick="exportToExcel('legal')">📊 Excel 저장</button>
+          <button class="btn-primary" onclick="showModal('dday')">+ 법정검사 등록</button>
         </div>
       </div>
-      <div class="section-title">D-Day 현황</div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px">
-        <div class="kpi-card green"><div class="kpi-label">완료</div><div class="kpi-value" id="dd-complete">0<span>건</span></div></div>
-        <div class="kpi-card red"><div class="kpi-label">기한 초과</div><div class="kpi-value" id="dd-over">0<span>건</span></div></div>
-        <div class="kpi-card amber"><div class="kpi-label">7일 이내 긴급</div><div class="kpi-value" id="dd-urgent">0<span>건</span></div></div>
-        <div class="kpi-card blue"><div class="kpi-label">30일 이내</div><div class="kpi-value" id="dd-warn">0<span>건</span></div></div>
-        <div class="kpi-card navy"><div class="kpi-label">안전 여유</div><div class="kpi-value" id="dd-safe">0<span>건</span></div></div>
-      </div>
       <div class="table-card">
-        <div class="table-header"><div class="th">법정 검사/선임 대상 전체 일정</div></div>
-        <table>
-          <thead><tr><th>구분</th><th>대상 명칭</th><th>법정 주기</th><th>차기 예정일</th><th>상태</th><th>비고</th><th>삭제</th></tr></thead>
-          <tbody id="dday-tbody"></tbody>
+        <div class="table-header"><div class="th">건축물 법정 의무 점검 및 검사 주기 관리</div></div>
+        <table id="main-dday-table">
+          <thead>
+            <tr>
+              <th>검사/점검 종류</th>
+              <th>관리 대상 대상물</th>
+              <th>법정 주기</th>
+              <th>최근 검사일</th>
+              <th>차기 예정일</th>
+              <th>남은 기한</th>
+              <th>상태</th>
+              <th>작업</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
         </table>
-        <div class="add-row-btn" onclick="showModal('dday')">＋ 점검 일정 추가</div>
+        <div class="add-row-btn" onclick="showModal('dday')">＋ 법정 의무 검사 대상 및 차기 주기 일정 추가...</div>
       </div>
     </div>
-
 
     <div id="page-cost" class="page">
       <div class="topbar">
-        <h1>비용 관리 (Cost Save)</h1>
+        <h1>공사 및 비용 관리</h1>
         <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('cost')">📊 Excel 내보내기</button>
-          <button class="btn-primary" onclick="showModal('cost')">+ 비용 절감 내역 추가</button>
+          <button class="btn-export" onclick="exportToExcel('cost')">📊 Excel 저장</button>
+          <button class="btn-primary" onclick="showModal('cost')">+ 비용 집행 기록</button>
         </div>
       </div>
       <div class="table-card">
-        <div class="table-header"><div class="th">비용 절감 및 공사 집행 리스트</div></div>
-        <table>
-          <thead><tr><th>공사/용역명</th><th>최초 견적가</th><th>실행가 (계약금액)</th><th>절감액 (Cost Save)</th><th>절감 사유 및 세부 내역</th><th>삭제</th></tr></thead>
-          <tbody id="cost-tbody2"></tbody>
+        <div class="table-header"><div class="th">시설 영선 공사 및 자재 구매 비용 집행 내역 (예산 절감 실적)</div></div>
+        <table id="main-cost-table">
+          <thead>
+            <tr>
+              <th>공사/구매명</th>
+              <th>집행 일자</th>
+              <th>최초 견적가</th>
+              <th>실행 정산가</th>
+              <th>절감액</th>
+              <th>비고 (네고 사유 및 절감 근거)</th>
+              <th>삭제</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
         </table>
+        <div class="add-row-btn" onclick="showModal('cost')">＋ 예산 절감 및 네고 정산 비용 집행 내역 추가...</div>
       </div>
     </div>
-
 
     <div id="page-vendor" class="page">
       <div class="topbar">
-        <h1>업체 평가 히스토리</h1>
-        <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('vendor')">📊 Excel 내보내기</button>
-          <button class="btn-primary" onclick="showModal('vendor')">+ 업체 평가 추가</button>
-        </div>
+        <h1>외주 협력업체 평가</h1>
       </div>
       <div class="table-card">
-        <div class="table-header"><div class="th">협력업체 수행 및 만족도 평가 목록</div></div>
-        <table>
-          <thead><tr><th>업체명</th><th>공사/용역 유형</th><th>평점</th><th>주요 평가 내용 (메모)</th><th>삭제</th></tr></thead>
-          <tbody id="vendor-tbody2"></tbody>
+        <div class="table-header"><div class="th">등록 외주 관리 업체 종합 수행 능력 평가표</div></div>
+        <table id="main-vendor-table">
+          <thead>
+            <tr>
+              <th>업체명</th>
+              <th>주요 공종</th>
+              <th>전화번호</th>
+              <th>평가 점수</th>
+              <th>최근 거래일</th>
+              <th>상태/종합 의견</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
         </table>
       </div>
     </div>
-
 
     <div id="page-equipment" class="page">
-      <div class="topbar">
-        <h1>주요 설비 가동률 관리</h1>
-        <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('equipment')">📊 Excel 내보내기</button>
-          <button class="btn-primary" onclick="showModal('eq')">+ 설비 등록</button>
-        </div>
-      </div>
+      <div class="topbar"><h1>핵심 설비 실시간 가동률</h1></div>
       <div class="table-card">
-        <div class="table-header"><div class="th">설비 운영 상태 및 가동 효율</div></div>
-        <table>
-          <thead><tr><th>설비 분류</th><th>설비명 / 위치</th><th>운영 상태</th><th>당월 가동률</th><th>고장 시간 (누적)</th><th>최종 점검일</th></tr></thead>
-          <tbody id="eq-tbody"></tbody>
+        <div class="table-header"><div class="th">주요 기계/전기 영선 핵심 설비 작동 상태 정보</div></div>
+        <table id="main-eq-table">
+          <thead>
+            <tr>
+              <th>설비명</th>
+              <th>설치 위치</th>
+              <th>관리 번호</th>
+              <th>현재 상태</th>
+              <th>금월 가동률</th>
+              <th>최종 점검일</th>
+              <th>제어</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
         </table>
       </div>
     </div>
-
 
     <div id="page-consumable" class="page">
-      <div class="topbar">
-        <h1>소모품 교체 주기 관리</h1>
-        <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('consumable')">📊 Excel 내보내기</button>
-          <button class="btn-primary" onclick="showModal('item')">+ 자재 등록</button>
-        </div>
-      </div>
+      <div class="topbar"><h1>🔧 소모품 교체 주기 관리</h1></div>
       <div class="table-card">
-        <div class="table-header"><div class="th">주요 자재 및 소모품 교체 이력</div></div>
+        <div class="table-header"><div class="th">정기 교체 소모품 및 필터 관리대장</div></div>
         <table>
-          <thead><tr><th>품목명</th><th>설치 위치</th><th>재고 수량</th><th>최종 교체일</th><th>교체 주기</th><th>차기 교체 예정</th><th>상태</th></tr></thead>
-          <tbody id="item-tbody"></tbody>
+          <thead>
+            <tr>
+              <th>설비/소모품명</th>
+              <th>위치</th>
+              <th>교체 주기</th>
+              <th>최근 교체일</th>
+              <th>교체 예정일</th>
+              <th>상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>공조기 외기필터 (Pre)</td><td>지하 1층 공조실</td><td>6개월</td><td>2025.11.10</td><td>2026.05.10</td><td><span class="badge b-incomplete">기한 초과</span></td></tr>
+            <tr><td>정화조 배수펌프 오일</td><td>지하 2층 펌프실</td><td>12개월</td><td>2025.06.15</td><td>2026.06.15</td><td><span class="badge b-wip">임박 (D-27)</span></td></tr>
+            <tr><td>기계실 LED 고천장등</td><td>지하 1층 기계실</td><td>36개월</td><td>2024.03.11</td><td>2027.03.11</td><td><span class="badge b-done">안전</span></td></tr>
+            <tr><td>수배전반 흡습제 (실리카겔)</td><td>특고압 변전실</td><td>12개월</td><td>2025.10.05</td><td>2026.10.05</td><td><span class="badge b-done">안전</span></td></tr>
+          </tbody>
         </table>
       </div>
     </div>
-
 
     <div id="page-energy" class="page">
       <div class="topbar">
-        <h1>에너지 사용량 및 비용 분석</h1>
-        <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('energy')">📊 Excel 내보내기</button>
-        </div>
+        <h1>⚡ 에너지 사용량 및 인입 현황</h1>
+        <button class="btn-export" onclick="exportToExcel('energy')">📊 Excel 저장</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="charts-row" style="grid-template-columns: 2fr 1fr;">
         <div class="chart-card">
-          <div class="ct">전기 사용량 추이 (kWh)</div>
-          <div style="position:relative;height:18px"></div>
-          <canvas id="energy-elec-chart" height="180"></canvas>
+          <div class="ct">전력 및 가스 월별 사용량 추이</div>
+          <div style="position:relative;height:220px"><canvas id="energy-trend-chart"></canvas></div>
         </div>
         <div class="chart-card">
-          <div class="ct">수도/가스 사용량 추이</div>
-          <div style="position:relative;height:18px"></div>
-          <canvas id="energy-water-chart" height="180"></canvas>
+          <div class="ct">금월 에너지 비용 구성비</div>
+          <div style="position:relative;height:220px"><canvas id="energy-pie-chart"></canvas></div>
         </div>
       </div>
     </div>
 
-
     <div id="page-report" class="page">
       <div class="topbar">
-        <h1>월간 시설관리 성과 리포트</h1>
-        <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('report')" style="background:var(--navy)">💾 리포트 Excel 다운로드</button>
-        </div>
+        <h1>📊 시설관리 월간 성과 리포트</h1>
+        <button class="btn-export" onclick="exportToExcel('report')">💾 종합 레포트 다운로드 (Excel)</button>
       </div>
-      <div class="table-card" style="padding:24px; color:var(--text)">
-        <h2 style="font-size:16px;margin-bottom:14px;text-align:center">드림솔 시설관리 성과 요약 보고서</h2>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;margin-bottom:20px;border-bottom:1px dashed var(--border);padding-bottom:14px">
-          <div>• <strong>보고 기간:</strong> 당월 기준 (실시간 집계)</div>
-          <div>• <strong>담당자:</strong> 준서 (시설관리팀)</div>
+      <div class="content-panel" style="background:#fff; padding:30px; border-radius:12px; border:1px solid var(--border)">
+        <h2 style="text-align:center; margin-bottom:30px; color:var(--navy)">(주)드림솔 시설관리 운영 성과 요약</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;">
+          <div style="padding:20px; background:var(--surface2); border-radius:8px;">
+            <h4 style="margin-bottom:10px; color:var(--text2)">주요 관리 지표 수치</h4>
+            <p style="font-size:13px; margin:6px 0;">• 민원 보수 완료율: <strong id="rpt-rate" style="color:var(--accent)">-</strong></p>
+            <p style="font-size:13px; margin:6px 0;">• 예산 절감 누적액: <strong id="rpt-save" style="color:var(--green)">-</strong></p>
+            <p style="font-size:13px; margin:6px 0;">• 법정 의무검사 준수율: <strong id="rpt-compliance" style="color:var(--purple)">-</strong></p>
+            <p style="font-size:13px; margin:6px 0;">• 핵심 장비 평균 가동률: <strong id="rpt-uptime" style="color:var(--amber)">-</strong></p>
+          </div>
+          <div style="padding:20px; background:var(--surface2); border-radius:8px;">
+            <h4 style="margin-bottom:10px; color:var(--text2)">종합 시설 의견 및 총평</h4>
+            <textarea style="width:100%; height:100px; padding:10px; border-radius:6px; border:1px solid var(--border); font-size:12px; resize:none;" placeholder="금월 건물 종합 안전 점검 결과 특이사항 없으며 지적된 보수 건은 계획대로 집행 완료함. 외주업체 관리실태 양호함."></textarea>
+          </div>
         </div>
-        <h3 style="font-size:12px;color:var(--text3);margin-bottom:10px">■ 핵심 성과 지표 (KPI)</h3>
-        <ul style="font-size:13px;line-height:2;margin-bottom:20px;padding-left:14px">
-          <li>업무 완료율: <span id="rpt-rate" style="font-weight:700">0%</span> (목표치 95% 대비 관리중)</li>
-          <li>누적 비용 절감액: <span id="rpt-save" style="font-weight:700;color:var(--green)">₩0</span></li>
-          <li>법정점검 준수율: <span id="rpt-compliance" style="font-weight:700">0%</span> (지연 및 과태료 리스크 제로화)</li>
-          <li>핵심 설비 평균 가동률: <span id="rpt-uptime" style="font-weight:700">0%</span> (안정적 전력 및 기계 설비 유지)</li>
-        </ul>
-        <p style="font-size:12px;color:var(--text2);background:var(--surface2);padding:10px;border-radius:4px">
-          ※ 본 리포트는 입력된 업무 통합 관리 데이터, 비용 절감 데이터, 법정점검 일정을 기반으로 실시간 자동 빌드된 성과 요약 보고서입니다. 상단의 엑셀 저장 기능을 통해 정식 문서로 출력 및 보고가 가능합니다.
-        </p>
       </div>
     </div>
 
@@ -749,929 +682,157 @@ tr:hover td { background: var(--surface2); }
 
 <div class="modal-backdrop" id="modal-task">
   <div class="modal">
-    <h3>새로운 시설 업무 등록</h3>
-    <div class="login-form">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>업무 구분</label>
-          <select id="t-type">
-            <option value="민원">🚨 민원접수/보수</option>
-            <option value="설비">⚙️ 설비 일상점검</option>
-            <option value="점검">📅 정기 정밀점검</option>
-            <option value="공사">🏗️ 시설 개선공사</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>접수일자</label>
-          <input type="date" id="t-date">
-        </div>
-      </div>
+    <h3>📋 시설 민원 및 정비 업무 등록</h3>
+    <div class="form-grid">
       <div class="form-group">
-        <label>대상 시설 / 위치</label>
-        <input type="text" id="t-loc" placeholder="예: 3층 대회의실 공조기, 지하2층 배수펌프">
+        <label>업무 분류 유형</label>
+        <select id="t-type">
+          <option value="영선보수">🛠️ 영선보수</option>
+          <option value="기계설비">⚙️ 기계설비</option>
+          <option value="법정점검">📋 법정점검</option>
+          <option value="전기공사">⚡ 전기공사</option>
+        </select>
       </div>
+      <div class="form-group"><label>점검/보수 위치</label><input type="text" id="t-loc" placeholder="예: 로비 엘리베이터, 3층 탕비실"></div>
+    </div>
+    <div class="form-grid one" style="margin-top:10px">
+      <div class="form-group"><label>조치 및 정비 내용</label><textarea id="t-detail" rows="3" placeholder="접수된 고장 현상 및 상세 조치 계획 입력"></textarea></div>
+    </div>
+    <div class="form-grid" style="margin-top:10px">
+      <div class="form-group"><label>작업 업체 / 담당자</label><input type="text" id="t-vendor" placeholder="예: 자체작업, 드림이앤씨"></div>
       <div class="form-group">
-        <label>상세 작업 및 보수 내역</label>
-        <textarea id="t-detail" rows="3" placeholder="작업 내용을 상세히 입력하세요."></textarea>
-      </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>담당자 / 협력업체</label>
-          <input type="text" id="t-vendor" placeholder="예: 자체처리, 드림솔 ENG">
-        </div>
-        <div class="form-group">
-          <label>초기 상태</label>
-          <select id="t-status">
-            <option value="미착수">❌ 미착수 (대기)</option>
-            <option value="진행중">⏳ 진행중 (처리중)</option>
-            <option value="완료">✅ 완료 (조치완료)</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-btns">
-        <button class="btn-cancel" onclick="closeModal('task')">취소</button>
-        <button class="btn-save" onclick="saveTask()">등록하기</button>
+        <label>초기 진행 상태</label>
+        <select id="t-status">
+          <option value="미착수">❌ 미착수</option>
+          <option value="진행중">⏳ 진행중</option>
+          <option value="완료">✅ 완료됨</option>
+        </select>
       </div>
     </div>
-  </div>
-</div>
-
-<div class="modal-backdrop" id="modal-cost">
-  <div class="modal">
-    <h3>비용 절감(Cost Save) 내역 추가</h3>
-    <div class="login-form">
-      <div class="form-group">
-        <label>공사 / 용역 명칭</label>
-        <input type="text" id="c-name" placeholder="예: LED 전등 교체공사, 정수기 정기용역">
-      </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>최초 견적 금액 (원)</label>
-          <input type="number" id="c-orig" placeholder="0">
-        </div>
-        <div class="form-group">
-          <label>실행 계약 금액 (원)</label>
-          <input type="number" id="c-final" placeholder="0">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>절감 사유 및 비고</label>
-        <input type="text" id="c-note" placeholder="예: 다중 비교견적 및 단가 네고 협상 완료">
-      </div>
-      <div class="modal-btns">
-        <button class="btn-cancel" onclick="closeModal('cost')">취소</button>
-        <button class="btn-save" onclick="saveCost()" style="background:var(--green)">절감내역 등록</button>
-      </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('task')">취소</button>
+      <button class="btn-save" onclick="saveTask()">저장하기</button>
     </div>
   </div>
 </div>
 
 <div class="modal-backdrop" id="modal-dday">
   <div class="modal">
-    <h3>법정 의무 검사 및 선임 일정 추가</h3>
-    <div class="login-form">
-      <div class="form-group">
-        <label>검사/선임 항목명</label>
-        <input type="text" id="d-name" placeholder="예: 승강기 정기검사, 소방안전관리자 선임">
-      </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>법정 주기</label>
-          <input type="text" id="d-cycle" placeholder="예: 1년, 2년, 반기">
-        </div>
-        <div class="form-group">
-          <label>차기 예정일</label>
-          <input type="date" id="d-date">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>비고 및 관리번호</label>
-        <input type="text" id="d-note" placeholder="참고사항 입력">
-      </div>
-      <div class="modal-btns">
-        <button class="btn-cancel" onclick="closeModal('dday')">취소</button>
-        <button class="btn-save" onclick="saveDday()">일정 추가</button>
-      </div>
+    <h3>📅 법정 의무 검사 대상 등록</h3>
+    <div class="form-grid one">
+      <div class="form-group"><label>법정 의무 검사 명칭</label><input type="text" id="d-name" placeholder="예: 승강기 정기검사, 소방종합정밀점검"></div>
     </div>
-  </div>
-</div>
-
-<div class="modal-backdrop" id="modal-vendor">
-  <div class="modal">
-    <h3>협력업체 평가 등록</h3>
-    <div class="login-form">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>업체명</label>
-          <input type="text" id="v-name" placeholder="업체명 입력">
-        </div>
-        <div class="form-group">
-          <label>공사/용역 유형</label>
-          <input type="text" id="v-type" placeholder="예: 소방, 전기, 기계">
-        </div>
-      </div>
+    <div class="form-grid" style="margin-top:10px">
+      <div class="form-group"><label>검사 대상물 대상 범위</label><input type="text" id="d-target" placeholder="예: 전 부문, 본관 1호기"></div>
       <div class="form-group">
-        <label>종합 평점</label>
-        <select id="v-star">
-          <option value="5">⭐⭐⭐⭐⭐ (최우수)</option>
-          <option value="4">⭐⭐⭐⭐ (우수)</option>
-          <option value="3">⭐⭐⭐ (보통)</option>
-          <option value="2">⭐⭐ (미흡)</option>
-          <option value="1">⭐ (불량)</option>
+        <label>법정 검사 주기</label>
+        <select id="d-cycle">
+          <option value="6개월">6개월</option>
+          <option value="1년">1년 (정기)</option>
+          <option value="2년">2년</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>평가 메모 및 특이사항</label>
-        <input type="text" id="v-note" placeholder="AS 신속성, 시공 품질 등 기재">
-      </div>
-      <div class="modal-btns">
-        <button class="btn-cancel" onclick="closeModal('vendor')">취소</button>
-        <button class="btn-save" onclick="saveVendor()">평가 저장</button>
-      </div>
+    </div>
+    <div class="form-grid" style="margin-top:10px">
+      <div class="form-group"><label>최근 최종 검사일</label><input type="date" id="d-last"></div>
+      <div class="form-group"><label>차기 예정 기한일</label><input type="date" id="d-next"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('dday')">취소</button>
+      <button class="btn-save" onclick="saveDday()">스케줄 등록</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast">✅ 데이터가 정상적으로 저장되었습니다.</div>
+<div class="modal-backdrop" id="modal-cost">
+  <div class="modal">
+    <h3>💰 공사 예산 절감 및 지출 등록</h3>
+    <div class="form-grid one">
+      <div class="form-group"><label>공사 명칭 / 구매 항목</label><input type="text" id="c-name" placeholder="예: 옥상 방수공사, 지하 주차장 등교체"></div>
+    </div>
+    <div class="form-grid" style="margin-top:10px">
+      <div class="form-group"><label>최초 견적 금액 (원)</label><input type="number" id="c-orig" placeholder="0"></div>
+      <div class="form-group"><label>최종 실행 정산액 (원)</label><input type="number" id="c-final" placeholder="0"></div>
+    </div>
+    <div class="form-grid one" style="margin-top:10px">
+      <div class="form-group"><label>비고 및 절감 공로 사유</label><input type="text" id="c-note" placeholder="예: 외주 자재 직접 조달 및 단가 네고 협상"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('cost')">취소</button>
+      <button class="btn-save" onclick="saveCost()">집행 기록 저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">알림 메시지</div>
 
 <script>
-// DOM 도우미
+// ── DATA MANAGEMENT (LOCAL STORAGE STORAGE) ──
+const defaultTasks = [
+  { type: '영선보수', date: '2026.05.10', loc: '본관 3층 대회의실', detail: '텍스 천장 누수 흔적 보수 및 오염 부위 도장 작업 완료', vendor: '자체작업', status: '완료', compDate: '2026.05.12' },
+  { type: '기계설비', date: '2026.05.14', loc: '지하 1층 기계실', detail: '집수정 배수 펌프 #2 가동 소음 및 진동 발생 고장 점검 교체', vendor: '드림이앤씨', status: '진행중', compDate: '' },
+  { type: '법정점검', date: '2026.05.18', loc: '수배전실 변전소', detail: '전기안전관리자 정기 직무고시 점검 및 절연저항 계측 측정', vendor: '자체작업', status: '미착수', compDate: '' },
+  { type: '전기공사', date: '2026.05.19', loc: '외부 주차장 가로등', detail: '우천시 주차장 서치라이트 누전 차단기 트립 고장 회로 정비', vendor: '한성전력', status: '완료', compDate: '2026.05.19' }
+];
+
+const defaultLegals = [
+  { id: 1, name: '소방시설 자체점검 (종합)', target: '소방대상물 전 부문', cycle: '1년', lastDate: '2025.06.10', nextDate: '2026.06.10', status: '미완료' },
+  { id: 2, name: '승강기 정기 안전검사', target: '승객용 승강기 1~3호기', cycle: '1년', lastDate: '2025.08.15', nextDate: '2026.08.15', status: '미완료' },
+  { id: 3, name: '고압가스 냉동제조 정기검사', target: '흡수식 냉온수기 2기', cycle: '1년', lastDate: '2025.04.20', nextDate: '2026.04.20', status: '완료 처리됨' },
+  { id: 4, name: '저수조 청소 및 위생점검', target: '지하 상/하수 저수조', cycle: '6개월', lastDate: '2025.11.05', nextDate: '2026.05.05', status: '미완료' }
+];
+
+const defaultCosts = [
+  { name: '지하주차장 노후 LED 고효율 교체공사', date: '2026.02.15', orig: 15000000, final: 12500000, note: '고효율 에너지 공단 보조금 신청 및 업체 단가 협상' },
+  { name: '옥상 시트 방수 및 균열 충진 보수공사', date: '2026.04.02', orig: 8500000, final: 7800000, note: '자체 시방서 작성 및 경쟁 입찰 통한 단가 네고 적용' },
+  { name: '중앙 공조기 코일 교체 및 세관 영선자재', date: '2026.05.11', orig: 4200000, final: 3900000, note: '직거래 도매상 선정을 통한 유통 마진 예산 절감' }
+];
+
+const vendors = [
+  { name: '드림이앤씨', type: '기계설비/배관', tel: '02-555-1234', score: 5, date: '2026.05.14', desc: '긴급 출동 대응력이 매우 신속하며 하자 보수 이행 완벽함' },
+  { name: '한성전력', type: '전기/소방공사', tel: '02-444-9876', score: 4, date: '2026.05.19', desc: '특고압 변전설비 시공 전문성이 높으나 단가가 약간 높은 편' },
+  { name: '세이프텍', type: '법정검사 대행', tel: '031-222-3344', score: 5, date: '2025.06.10', desc: '보고서 작성 및 소방서 공문 처리 처리가 깔끔함' },
+  { name: '종합방수공사', type: '영선/미장/방수', tel: '010-8888-5555', score: 3, date: '2026.04.02', desc: '숙련도는 우수하나 정산서 서류 피드백 처리가 약간 늦음' }
+];
+
+const equipments = [
+  { name: '특고압 메인 수배전반', loc: '동력동 지하 2층 변전실', code: 'TR-01', status: '정상 가동', uptime: 100, last: '2026.05.15' },
+  { name: '흡수식 냉온수기 터보냉동기', loc: '본관 지하 1층 기계실', code: 'CH-02', status: '부분 부하', uptime: 98.5, last: '2026.05.12' },
+  { name: '비상용 디젤 발전기 (500kW)', loc: '동력동 지하 2층 발전기실', code: 'GEN-01', status: '대기 중', uptime: 100, last: '2026.05.01' },
+  { name: '소방 주펌프 및 충압 펌프 세트', loc: '본관 지하 2층 소방 펌프실', code: 'FP-01', status: '정상 가동', uptime: 99.1, last: '2026.05.17' }
+];
+
+let tasks = JSON.parse(localStorage.getItem('ds_tasks')) || defaultTasks;
+let legals = JSON.parse(localStorage.getItem('ds_legals')) || defaultLegals;
+let costs = JSON.parse(localStorage.getItem('ds_costs')) || defaultCosts;
+
+let currentTaskFilter = 'ALL';
+let showDoneTasks = true;
+
 const $ = id => document.getElementById(id);
 
-// 전역 기본 데이터 및 상태 보존
-let tasks = [
-  { id: 1, type: '민원', loc: '4층 탕비실', detail: '싱크대 배수관 누수 현상 발생으로 패킹 교체 완료', vendor: '자체처리', date: '2026-05-10', status: '완료' },
-  { id: 2, type: '설비', loc: '지하2층 기계실', detail: '시급한 급수펌프 베어링 소음 상태 점검 및 구리스 주입', vendor: '드림솔ENG', date: '2026-05-12', status: '진행중' },
-  { id: 3, type: '점검', loc: '특고압 수전실', detail: '전기안전관리법에 따른 상반기 특고압 설비 정밀 안전진단 실시', vendor: '한국전기안전공사', date: '2026-05-15', status: '미착수' },
-  { id: 4, type: '공사', loc: '옥상 광장', detail: '노후 우레탄 바닥 균열 부위 전체 철거 및 고기능성 방수 도장공사', vendor: '현대방수', date: '2026-05-01', status: '완료' }
-];
-
-let costs = [
-  { name: '지하주차장 노후 형광등 전체 고효율 LED 전동 교체공사', orig: 12000000, final: 9800000, note: '3개 업체 공개 비교견적 최저가 협상 및 계약 단가 네고 성공' },
-  { name: '냉온수기 및 기계실 부스터펌프 시스템 세척 보수 용역', orig: 4500000, final: 4100000, note: '기존 장기 거래 협력업체 특약 할인 10% 적용 적용 계약 완료' }
-];
-
-let legals = [
-  { id: 'L1', name: '승강기 정기 검사', cycle: '1년', nextDate: '2026-05-25', status: '미완료', note: '한국승강기안전공단 수수료 납부 완료' },
-  { id: 'L2', name: '소방시설 종합 정밀 점검', cycle: '1년', nextDate: '2026-06-15', status: '미완료', note: '지정 대행업체 일정 조율 완료' },
-  { id: 'L3', name: '고압가스 냉동제조시설 안전 검사', cycle: '1년', nextDate: '2026-08-20', status: '미완료', note: '가스안전공사 정기 주기 검사' },
-  { id: 'L4', name: '저수조 청소 및 수질 검사 (상반기)', cycle: '반기', nextDate: '2026-05-14', status: '완료', note: '수질성적서 수령 및 행정청 제출 완료' }
-];
-
-let vendors = [
-  { name: '드림솔ENG', type: '기계설비/공조', star: 5, note: '야간 긴급 누수 발생 시 30분 이내 긴급 출동 및 신속 보수 완료로 대응 최우수' },
-  { name: '현대방수', type: '건축/방수/도장', star: 4, note: '시공 마감 품질은 전반적으로 매우 우수하나 작업 후 현장 주변 정리정돈 소홀' }
-];
-
-// 고정 설비 및 소모품 데이터 구조
-let equipments = [
-  { type: '전기설비', name: '메인 수배전반 / 기계실', status: '정상 가동', rate: 99.8, breakTime: 0, testDate: '2026-05-01' },
-  { type: '공조설비', name: '흡수식 냉온조기 1호기 / 옥상', status: '정상 가동', rate: 96.5, breakTime: 12, testDate: '2026-04-28' },
-  { type: '소방설비', name: '소방 주펌프 및 충압펌프 / 기계실', status: '대기 정기점검', rate: 100.0, breakTime: 0, testDate: '2026-05-11' },
-  { type: '승강설비', name: '인승용 엘리베이터 1~3호기', status: '2호기 부분 수리중', rate: 92.1, breakTime: 24, testDate: '2026-05-13' }
-];
-
-let consumables = [
-  { name: '공조기 에어필터 (미디움)', loc: '공조실 전체', stock: 45, lastDate: '2026-03-10', cycle: '6개월', nextDate: '2026-09-10', status: '안전' },
-  { name: '지하주차장 LED 직관램프 32W', loc: '지하 1~3층', stock: 12, lastDate: '2026-05-01', cycle: '수시교체', nextDate: '—', status: '보충필요' },
-  { name: '배수펌프용 메카니컬 씰', loc: '기계실 배수펌프', stock: 4, lastDate: '2025-11-15', cycle: '1년', nextDate: '2026-11-15', status: '안전' }
-];
-
-// 에너지 사용량 기본 데이터 리포팅용
-const energyData = {
-  months: ['12월', '1월', '2월', '3월', '4월', '5월(현재)'],
-  elec: [14200, 15800, 15100, 13200, 12400, 11800],
-  water: [340, 380, 350, 310, 290, 280],
-  gas: [850, 1120, 980, 620, 310, 150]
+// ── INITIALIZATION ──
+window.onload = function() {
+  $('today-chip').textContent = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+  initNavigation();
+  renderAll();
 };
 
-let showCompletedTasks = false;
-let currentTaskFilter = 'all';
-let currentTaskFilter2 = 'all';
-
-// 차트 전역 인스턴스 관리
-let barChartInstance = null;
-let lineChartInstance = null;
-let donutChartInstance = null;
-let energyElecChartInstance = null;
-let energyWaterChartInstance = null;
-
-// 로그인 처리 로직
-function doLogin() {
-  const id = $('login-id').value;
-  const pw = $('login-pw').value;
-  if (id === 'admin' && pw === '1234') {
-    $('login-screen').classList.add('hide');
-    initApp();
-  } else {
-    $('login-error').style.display = 'block';
-  }
-}
-
-// 비밀번호 창에서 엔터키 로그인 지원
-$('login-pw').addEventListener('keyup', function(e) {
-  if (e.key === 'Enter') doLogin();
-});
-$('login-id').addEventListener('keyup', function(e) {
-  if (e.key === 'Enter') doLogin();
-});
-
-// 앱 로드 및 네비게이션 설정
-document.addEventListener('DOMContentLoaded', () => {
-  // 초기 날짜 인쇄
-  const now = new Date();
-  $('today-chip').textContent = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} 실시간 현황`;
-  
-  // 사이드바 메뉴 전환
+function initNavigation() {
   document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', function() {
+    item.onclick = function() {
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
       this.classList.add('active');
       
-      const targetPage = this.getAttribute('data-page');
-      document.querySelectorAll('.page').classNames = 'page';
+      const pg = this.getAttribute('data-page');
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      $('page-' + pg).classList.add('active');
       
-      $('page-' + targetPage).classList.add('active');
-      
-      // 페이지별 특화 차트 Re-render
-      if (targetPage === 'energy') {
-        renderEnergyCharts();
-      }
-    });
-  });
-});
-
-// 앱 데이터 초기 렌더링 통합
-function initApp() {
-  renderKPI();
-  renderDdayStrip();
-  renderTaskTable();
-  renderCostTable();
-  renderVendorTable();
-  
-  // Sub 탭 테이블 선행 빌드
-  renderTaskTable2();
-  renderDdayTable();
-  renderCostTable2();
-  renderVendorTable2();
-  renderEquipmentTable();
-  renderConsumableTable();
-  
-  // 메인 대시보드 그래픽 차트 빌드
-  renderMainCharts();
-  
-  // 알림 메시지 빌드
-  buildAlerts();
-}
-
-// 1. KPI 계산 모듈
-function renderKPI() {
-  // 업무 완료율 계산
-  const totalTasks = tasks.length;
-  const doneTasks = tasks.filter(t => t.status === '완료').length;
-  const rate = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-  $('kpi-rate').innerHTML = `${rate}<span>%</span>`;
-  $('kpi-rate-sub').textContent = `총 ${totalTasks}건 중 ${doneTasks}건 완료`;
-  $('rpt-rate').textContent = `${rate}%`;
-
-  // 누적 비용 절감액 계산
-  const totalSave = costs.reduce((acc, cur) => acc + (cur.orig - cur.final), 0);
-  $('kpi-save').textContent = `₩${totalSave.toLocaleString()}`;
-  $('kpi-save-sub').textContent = `전월 대비 누적 ▲${Math.round(totalSave/10000)}만원`;
-  $('cost-total').textContent = `₩${totalSave.toLocaleString()}`;
-  $('rpt-save').textContent = `₩${totalSave.toLocaleString()}`;
-
-  // 미착수 업무 건수 계산
-  const todoCount = tasks.filter(t => t.status === '미착수').length;
-  $('kpi-todo').innerHTML = `${todoCount}<span>건</span>`;
-  $('rpt-rate').parentElement.nextElementSibling.querySelector('span').textContent = `₩${totalSave.toLocaleString()}`;
-
-  // 설비 가동률 평균 계산
-  const avgUptime = equipments.reduce((acc, cur) => acc + cur.rate, 0) / equipments.length;
-  const roundedUptime = avgUptime.toFixed(1);
-  $('kpi-uptime').innerHTML = `${roundedUptime}<span>%</span>`;
-  $('kpi-uptime-sub').textContent = `주요설비 ${equipments.length}기 평균 지표`;
-  $('rpt-uptime').textContent = `${roundedUptime}%`;
-
-  // 법정점검 준수율 계산 (전체 검사 중 완료 비중)
-  const totalLegals = legals.length;
-  const doneLegals = legals.filter(l => l.status === '완료').length;
-  const complianceRate = totalLegals > 0 ? Math.round((doneLegals / totalLegals) * 100) : 0;
-  $('kpi-compliance').innerHTML = `${complianceRate}<span>%</span>`;
-  $('kpi-compliance-sub').textContent = `정기 검사 ${doneLegals}건 이행 완료`;
-  $('rpt-compliance').textContent = `${complianceRate}%`;
-
-  // 서브페이지 연동 KPI 인쇄
-  $('p-total').innerHTML = `${totalTasks}<span>건</span>`;
-  $('p-todo2').innerHTML = `${todoCount}<span>건</span>`;
-  $('p-wip').innerHTML = `${tasks.filter(t => t.status === '진행중').length}<span>건</span>`;
-  $('p-done2').innerHTML = `${doneTasks}<span>건</span>`;
-
-  $('dd-complete').innerHTML = `${doneLegals}<span>건</span>`;
-}
-
-// 2. 위험 기반 D-Day 스트립 배정 로직 (D-Day 실시간 계산 최적화)
-function renderDdayStrip() {
-  const container = $('dday-strip');
-  // 기존 수동 등록 버튼 제외 전체 노드 초기화
-  const cards = container.querySelectorAll('.dday-card');
-  cards.forEach(c => c.remove());
-
-  const today = new Date();
-
-  // D-Day 상태 스코어 카운트용 임시변수
-  let over = 0, urgent = 0, warn = 0, safe = 0;
-
-  legals.forEach(l => {
-    const targetDate = new Date(l.nextDate);
-    const diffTime = targetDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    let stateClass = 'dday-safe';
-    let ddayText = `D-${diffDays}`;
-
-    if (l.status === '완료') {
-      stateClass = 'dday-completed';
-      ddayText = '완료';
-    } else if (diffDays < 0) {
-      stateClass = 'dday-over';
-      ddayText = `❌ 지연 ${Math.abs(diffDays)}일`;
-      over++;
-    } else if (diffDays === 0) {
-      stateClass = 'dday-urgent';
-      ddayText = 'D-Day';
-      urgent++;
-    } else if (diffDays <= 7) {
-      stateClass = 'dday-urgent';
-      urgent++;
-    } else if (diffDays <= 30) {
-      stateClass = 'dday-warn';
-      warn++;
-    } else {
-      safe++;
-    }
-
-    if (l.status !== '완료') {
-      if (diffDays >= 0 && diffDays <= 7) ddayText = `🔥 D-${diffDays}`;
-    }
-
-    const card = document.createElement('div');
-    card.className = `dday-card ${stateClass}`;
-    card.innerHTML = `
-      <div class="dd-name">${l.name}</div>
-      <div class="dd-num">${ddayText}</div>
-      <div class="dd-date">주기: ${l.cycle} (${l.nextDate})</div>
-    `;
-    
-    // 점검 일정 카드를 클릭하면 완료 상태를 토글할 수 있는 기능 추가
-    card.onclick = () => {
-      l.status = l.status === '완료' ? '미완료' : '완료';
-      showToast('상태가 변경되었습니다.');
-      refreshData();
+      if(pg === 'energy') renderEnergyCharts();
     };
-
-    container.insertBefore(card, container.firstChild);
-  });
-
-  // 서브 탭 KPI 동기화
-  $('dd-over').innerHTML = `${over}<span>건</span>`;
-  $('dd-urgent').innerHTML = `${urgent}<span>건</span>`;
-  $('dd-warn').innerHTML = `${warn}<span>건</span>`;
-  $('dd-safe').innerHTML = `${safe}<span>건</span>`;
-}
-
-// 3. 리스크 얼럿창 빌드 로직
-function buildAlerts() {
-  const container = $('alert-container');
-  container.innerHTML = '';
-
-  const today = new Date();
-  let alertCount = 0;
-
-  legals.forEach(l => {
-    if (l.status !== '완료') {
-      const targetDate = new Date(l.nextDate);
-      const diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
-
-      if (diffDays < 0) {
-        alertCount++;
-        container.innerHTML += `
-          <div class="alert-card">
-            <div class="icon">🚨</div>
-            <div class="content">
-              <div class="title">법정의무 검사 기한 초과 리스크 발생</div>
-              <div class="desc">[${l.name}] 검사 기한이 <strong>${Math.abs(diffDays)}일 경과</strong>되었습니다. 즉시 검사기관 일정을 수립하여 과태료 부과를 방지하십시오.</div>
-            </div>
-          </div>
-        `;
-      } else if (diffDays <= 7) {
-        alertCount++;
-        container.innerHTML += `
-          <div class="alert-card" style="background:#fffbea; border-color:#f5c842">
-            <div class="icon" style="color:var(--amber)">⚠️</div>
-            <div class="content">
-              <div class="title" style="color:#92650a">법정의무 검사 기한 임박 알림</div>
-              <div class="desc" style="color:#784f07">[${l.name}] 예정일이 일주일 이내(<strong>D-${diffDays}일</strong>)로 다가왔습니다. 진행 현황을 재점검하십시오.</div>
-            </div>
-          </div>
-        `;
-      }
-    }
   });
 }
 
-// 4. 메인 대시보드 업무 테이블 바인딩 (완료 필터 토글 완전 연동)
-function renderTaskTable() {
-  const tbody = $('task-tbody');
-  tbody.innerHTML = '';
-
-  let filtered = tasks;
-
-  // 상단 필터 미착수/진행중 알약 버튼 필터링
-  if (currentTaskFilter !== 'all') {
-    filtered = filtered.filter(t => t.status === currentTaskFilter);
-  }
-
-  // 완료 항목 숨기기/보기 토글 상태 필터링
-  if (!showCompletedTasks) {
-    filtered = filtered.filter(t => t.status !== '완료');
-  }
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px;">조건에 해당하는 노출 업무 내역이 존재하지 않습니다.</td></tr>`;
-    return;
-  }
-
-  filtered.forEach(t => {
-    let sClass = 'b-todo';
-    if (t.status === '진행중') sClass = 'b-wip';
-    if (t.status === '완료') sClass = 'b-done';
-
-    let typeClass = 'tc-complaint';
-    if (t.type === '설비') typeClass = 'tc-facility';
-    if (t.type === '점검') typeClass = 'tc-inspect';
-    if (t.type === '공사') typeClass = 'tc-construction';
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><span class="type-chip ${typeClass}">${t.type}</span></td>
-      <td style="font-weight:500">${t.loc}</td>
-      <td style="color:var(--text2);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.detail}">${t.detail}</td>
-      <td>${t.vendor}</td>
-      <td style="font-family:var(--mono);font-size:11px">${t.date}</td>
-      <td><span class="badge ${sClass}">${t.status}</span></td>
-    `;
-    
-    // 상태 배지 클릭 시 즉시 변경되는 퀵 기능 바인딩
-    tr.querySelector('.badge').onclick = () => {
-      if (t.status === '미착수') t.status = '진행중';
-      else if (t.status === '진행중') t.status = '완료';
-      else t.status = '미착수';
-      showToast('업무 진행 상태가 신속 변경되었습니다.');
-      refreshData();
-    };
-
-    tbody.appendChild(tr);
-  });
-}
-
-function filterTask(status, el) {
-  currentTaskFilter = status;
-  const pills = el.parentElement.querySelectorAll('.pill');
-  pills.forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  renderTaskTable();
-}
-
-function toggleDone() {
-  showCompletedTasks = !showCompletedTasks;
-  if (showCompletedTasks) {
-    $('done-toggle').innerHTML = `▾ 완료 항목 숨기기`;
-  } else {
-    $('done-toggle').innerHTML = `▸ 완료 항목 보기`;
-  }
-  renderTaskTable();
-}
-
-// 5. 비용 및 업체 히스토리 테이블 렌더러
-function renderCostTable() {
-  const tbody = $('cost-tbody');
-  tbody.innerHTML = '';
-  
-  // 메인 대시보드에는 공간 관계상 상위 4개 내역 노출
-  costs.slice(0, 4).forEach(c => {
-    const save = c.orig - c.final;
-    tbody.innerHTML += `
-      <tr>
-        <td style="font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.name}">${c.name}</td>
-        <td style="font-family:var(--mono);color:var(--text3)">₩${c.orig.toLocaleString()}</td>
-        <td style="font-family:var(--mono)">₩${c.final.toLocaleString()}</td>
-        <td class="cost-save-val">₩${save.toLocaleString()}</td>
-      </tr>
-    `;
-  });
-}
-
-function renderVendorTable() {
-  const tbody = $('vendor-tbody');
-  tbody.innerHTML = '';
-  vendors.slice(0, 4).forEach(v => {
-    const stars = '⭐'.repeat(v.star);
-    tbody.innerHTML += `
-      <tr>
-        <td style="font-weight:500">${v.name}</td>
-        <td><span class="type-chip tc-facility">${v.type}</span></td>
-        <td><span class="star">${stars}</span></td>
-        <td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${v.note}">${v.note}</td>
-      </tr>
-    `;
-  });
-}
-
-// 6. 독립 전용 서브 메뉴 관리페이지 테이블 바인딩 모듈 리스트
-function renderTaskTable2() {
-  const tbody = $('task-tbody2');
-  tbody.innerHTML = '';
-
-  let filtered = tasks;
-  if (currentTaskFilter2 !== 'all') {
-    filtered = filtered.filter(t => t.type === currentTaskFilter2);
-  }
-
-  filtered.forEach(t => {
-    let sClass = 'b-todo', typeClass = 'tc-complaint';
-    if (t.status === '진행중') sClass = 'b-wip';
-    if (t.status === '완료') sClass = 'b-done';
-
-    if (t.type === '설비') typeClass = 'tc-facility';
-    if (t.type === '점검') typeClass = 'tc-inspect';
-    if (t.type === '공사') typeClass = 'tc-construction';
-
-    tbody.innerHTML += `
-      <tr>
-        <td><span class="type-chip ${typeClass}">${t.type}</span></td>
-        <td style="font-weight:500">${t.loc}</td>
-        <td>${t.detail}</td>
-        <td>${t.vendor}</td>
-        <td style="font-family:var(--mono);font-size:11px">${t.date}</td>
-        <td><span class="badge ${sClass}" onclick="quickToggleStatus(${t.id})">${t.status}</span></td>
-        <td><button class="btn-cancel" style="padding:2px 8px;font-size:10px;" onclick="deleteTask(${t.id})">삭제</button></td>
-      </tr>
-    `;
-  });
-}
-
-function filterTask2(type, el) {
-  currentTaskFilter2 = type;
-  const pills = el.parentElement.querySelectorAll('.pill');
-  pills.forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  renderTaskTable2();
-}
-
-function quickToggleStatus(id) {
-  const t = tasks.find(x => x.id === id);
-  if (!t) return;
-  if (t.status === '미착수') t.status = '진행중';
-  else if (t.status === '진행중') t.status = '완료';
-  else t.status = '미착수';
-  refreshData();
-}
-
-function deleteTask(id) {
-  if(confirm('해당 시설 업무 내역을 영구 삭제하시겠습니까?')) {
-    tasks = tasks.filter(x => x.id !== id);
-    refreshData();
-  }
-}
-
-function renderDdayTable() {
-  const tbody = $('dday-tbody');
-  tbody.innerHTML = '';
-  legals.forEach((l, index) => {
-    const sClass = l.status === '완료' ? 'b-done' : 'b-incomplete';
-    tbody.innerHTML += `
-      <tr>
-        <td><span class="type-chip tc-inspect">법정점검</span></td>
-        <td style="font-weight:500">${l.name}</td>
-        <td>${l.cycle}</td>
-        <td style="font-family:var(--mono)">${l.nextDate}</td>
-        <td><span class="badge ${sClass}" onclick="toggleLegalStatus(${index})">${l.status}</span></td>
-        <td style="color:var(--text2)">${l.note}</td>
-        <td><button class="btn-cancel" style="padding:2px 8px;font-size:10px;" onclick="deleteLegal(${index})">삭제</button></td>
-      </tr>
-    `;
-  });
-}
-
-function toggleLegalStatus(index) {
-  legals[index].status = legals[index].status === '완료' ? '미완료' : '완료';
-  refreshData();
-}
-
-function deleteLegal(index) {
-  if(confirm('점검 일정을 목록에서 삭제하시겠습니까?')) {
-    legals.splice(index, 1);
-    refreshData();
-  }
-}
-
-function renderCostTable2() {
-  const tbody = $('cost-tbody2');
-  tbody.innerHTML = '';
-  costs.forEach((c, index) => {
-    const save = c.orig - c.final;
-    tbody.innerHTML += `
-      <tr>
-        <td style="font-weight:500">${c.name}</td>
-        <td style="font-family:var(--mono)">₩${c.orig.toLocaleString()}</td>
-        <td style="font-family:var(--mono)">₩${c.final.toLocaleString()}</td>
-        <td class="cost-save-val">₩${save.toLocaleString()}</td>
-        <td style="color:var(--text2)">${c.note}</td>
-        <td><button class="btn-cancel" style="padding:2px 8px;font-size:10px;" onclick="deleteCost(${index})">삭제</button></td>
-      </tr>
-    `;
-  });
-}
-
-function deleteCost(index) {
-  if(confirm('선택하신 공사 비용 절감 내역을 레코드에서 제거합니까?')) {
-    costs.splice(index, 1);
-    refreshData();
-  }
-}
-
-function renderVendorTable2() {
-  const tbody = $('vendor-tbody2');
-  tbody.innerHTML = '';
-  vendors.forEach((v, index) => {
-    const stars = '⭐'.repeat(v.star);
-    tbody.innerHTML += `
-      <tr>
-        <td style="font-weight:500">${v.name}</td>
-        <td><span class="type-chip tc-facility">${v.type}</span></td>
-        <td><span class="star">${stars}</span></td>
-        <td style="color:var(--text2)">${v.note}</td>
-        <td><button class="btn-cancel" style="padding:2px 8px;font-size:10px;" onclick="deleteVendor(${index})">삭제</button></td>
-      </tr>
-    `;
-  });
-}
-
-function deleteVendor(index) {
-  if(confirm('업체 평가 이력을 제거하시겠습니까?')) {
-    vendors.splice(index, 1);
-    refreshData();
-  }
-}
-
-function renderEquipmentTable() {
-  const tbody = $('eq-tbody');
-  tbody.innerHTML = '';
-  equipments.forEach((e, idx) => {
-    tbody.innerHTML += `
-      <tr>
-        <td><span class="type-chip tc-facility">${e.type}</span></td>
-        <td style="font-weight:500">${e.name}</td>
-        <td><span class="badge b-done" style="border:none">${e.status}</span></td>
-        <td style="font-family:var(--mono);font-weight:600">${e.rate}%</td>
-        <td style="font-family:var(--mono);color:var(--red)">${e.breakTime}시간</td>
-        <td style="font-family:var(--mono);font-size:11px">${e.testDate}</td>
-      </tr>
-    `;
-  });
-}
-
-function renderConsumableTable() {
-  const tbody = $('item-tbody');
-  tbody.innerHTML = '';
-  consumables.forEach((c, idx) => {
-    const sClass = c.status === '안전' ? 'b-done' : 'b-todo';
-    tbody.innerHTML += `
-      <tr>
-        <td style="font-weight:500">${c.name}</td>
-        <td>${c.loc}</td>
-        <td style="font-family:var(--mono)">${c.stock} EA</td>
-        <td style="font-family:var(--mono)">${c.lastDate}</td>
-        <td>${c.cycle}</td>
-        <td style="font-family:var(--mono)">${c.nextDate}</td>
-        <td><span class="badge ${sClass}">${c.status}</span></td>
-      </tr>
-    `;
-  });
-}
-
-
-// 7. CHART.JS 그래픽 대시보드 가공 렌더러 (다중 호출 시 메모리 누수 방지 완전 파괴 파기 후 재성장 로직)
-function renderMainCharts() {
-  // 1) 바형 차트 빌드
-  const barCtx = $('bar-chart').getContext('2d');
-  if (barChartInstance) barChartInstance.destroy();
-  barChartInstance = new Chart(barCtx, {
-    type: 'bar',
-    data: {
-      labels: ['12월', '1월', '2월', '3월', '4월', '5월'],
-      datasets: [
-        { label: '완료', data: [14, 18, 15, 22, 19, tasks.filter(t=>t.status==='완료').length], backgroundColor: '#3b82f6', borderRadius: 4 },
-        { label: '미착수/진행', data: [2, 4, 3, 1, 2, tasks.filter(t=>t.status!=='완료').length], backgroundColor: '#fca5a5', borderRadius: 4 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: 'rgba(0,0,0,0.04)' } } }
-    }
-  });
-
-  // 2) 누적 선형 차트 빌드
-  const lineCtx = $('line-chart').getContext('2d');
-  if (lineChartInstance) lineChartInstance.destroy();
-  const baseCumulativeSave = [120, 240, 310, 450, 520];
-  const currentTotalSaveManwon = costs.reduce((acc,cur)=>(acc+(cur.orig-cur.final)),0) / 10000;
-  baseCumulativeSave.push(Math.round(currentTotalSaveManwon));
-
-  lineChartInstance = new Chart(lineCtx, {
-    type: 'line',
-    data: {
-      labels: ['12월', '1월', '2월', '3월', '4월', '5월'],
-      datasets: [{ label: '누적 절감액', data: baseCumulativeSave, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.06)', fill: true, tension: 0.2, pointRadius: 3 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(0,0,0,0.04)' } } }
-    }
-  });
-
-  // 3) 도넛 링형 차트 구조 가공 및 수치 텍스트 빌드
-  const donutCtx = $('donut-chart').getContext('2d');
-  if (donutChartInstance) donutChartInstance.destroy();
-
-  const typesCount = { '민원': 0, '설비': 0, '점검': 0, '공사': 0 };
-  tasks.forEach(t => { if(typesCount[t.type] !== undefined) typesCount[t.type]++; });
-
-  donutChartInstance = new Chart(donutCtx, {
-    type: 'doughnut',
-    data: {
-      labels: ['민원', '설비', '점검', '공사'],
-      datasets: [{ data: [typesCount['민원'], typesCount['설비'], typesCount['점검'], typesCount['공사']], backgroundColor: ['#8b5cf6', '#3b82f6', '#f59e0b', '#10b981'], borderWidth: 0 }]
-    },
-    options: {
-      responsive: false, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      cutout: '70%'
-    }
-  });
-
-  // 우측 도넛 스태츠 문자열 설명판 생성
-  const statsWrap = $('ring-stats');
-  statsWrap.innerHTML = `
-    <div class="rs"><div class="rl" style="color:#8b5cf6">■ 민원/보수</div><div class="rv">${typesCount['민원']}<span>건</span></div></div>
-    <div class="rs"><div class="rl" style="color:#3b82f6">■ 설비점검</div><div class="rv">${typesCount['설비']}<span>건</span></div></div>
-  `;
-}
-
-// 에너지 관리 전용 차트 생성 엔진
-function renderEnergyCharts() {
-  const ctxElec = $('energy-elec-chart').getContext('2d');
-  if (energyElecChartInstance) energyElecChartInstance.destroy();
-  energyElecChartInstance = new Chart(ctxElec, {
-    type: 'line',
-    data: {
-      labels: energyData.months,
-      datasets: [{ label: '전력 사용량 (kWh)', data: energyData.elec, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.15 }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-
-  const ctxWater = $('energy-water-chart').getContext('2d');
-  if (energyWaterChartInstance) energyWaterChartInstance.destroy();
-  energyWaterChartInstance = new Chart(ctxWater, {
-    type: 'bar',
-    data: {
-      labels: energyData.months,
-      datasets: [
-        { label: '수도 사용량 (톤)', data: energyData.water, backgroundColor: '#10b981' },
-        { label: '가스 사용량 (m³)', data: energyData.gas, backgroundColor: '#f59e0b' }
-      ]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-}
-
-// 8. 전역 데이터 제어 가공 및 연동 모듈 리프레시어
-function refreshData() {
-  renderKPI();
-  renderDdayStrip();
-  renderTaskTable();
-  renderCostTable();
-  renderVendorTable();
-  
-  renderTaskTable2();
-  renderDdayTable();
-  renderCostTable2();
-  renderVendorTable2();
-  renderEquipmentTable();
-  renderConsumableTable();
-  
-  renderMainCharts();
-  buildAlerts();
-}
-
-// 9. 모달창 팝업 엔진
-function showModal(type) {
-  $('modal-' + type).classList.add('show');
-}
-function closeModal(type) {
-  $('modal-' + type).classList.remove('show');
-}
-
-// 10. 신규 레코드 데이터 수집 및 등록 로직 파트
-function saveTask() {
-  const type = $('t-type').value;
-  const loc = $('t-loc').value.trim();
-  const detail = $('t-detail').value.trim();
-  const vendor = $('t-vendor').value.trim() || '자체처리';
-  const date = $('t-date').value || new Date().toISOString().split('T')[0];
-  const status = $('t-status').value;
-
-  if(!loc || !detail) {
-    alert('대상 위치 및 상세 내역을 빠짐없이 입력해주세요.');
-    return;
-  }
-
-  const newId = tasks.length > 0 ? Math.max(...tasks.map(x=>x.id)) + 1 : 1;
-  tasks.unshift({ id: newId, type, loc, detail, vendor, date, status });
-  
-  closeModal('task');
-  showToast('신규 시설 업무 내역이 실시간 대시보드에 적용되었습니다.');
-  
-  // 데이터 폼 내용 리셋
-  $('t-loc').value = ''; $('t-detail').value = ''; $('t-vendor').value = '';
-  refreshData();
-}
-
-function saveCost() {
-  const name = $('c-name').value.trim();
-  const orig = parseInt($('c-orig').value) || 0;
-  const final = parseInt($('c-final').value) || 0;
-  const note = $('c-note').value.trim() || '비교견적 협상 처리';
-
-  if(!name || orig <= 0 || final <= 0) {
-    alert('정확한 공사/용역 자재명과 집행 금액을 입력해 주세요.');
-    return;
-  }
-
-  costs.unshift({ name, orig, final, note });
-  closeModal('cost');
-  showToast('비용 절감 실적이 대시보드 종합 성과 지표에 누적 반영되었습니다.');
-  
-  $('c-name').value = ''; $('c-orig').value = ''; $('c-final').value = ''; $('c-note').value = '';
-  refreshData();
-}
-
-function saveDday() {
-  const name = $('d-name').value.trim();
-  const cycle = $('d-cycle').value.trim() || '1년';
-  const nextDate = $('d-date').value;
-  const note = $('d-note').value.trim() || '특이사항 없음';
-
-  if(!name || !nextDate) {
-    alert('법정 점검 대상 명칭과 차기 검사 예정일을 명확히 기입바랍니다.');
-    return;
-  }
-
-  const newId = 'L' + (legals.length + 1);
-  legals.push({ id: newId, name, cycle, nextDate, status: '미완료', note });
-  
-  closeModal('dday');
-  showToast('새로운 법정 점검 예보가 등록되어 디데이 경보 트랙에 연동되었습니다.');
-  
-  $('d-name').value = ''; $('d-cycle').value = ''; $('d-date').value = ''; $('d-note').value = '';
-  refreshData();
-}
-
-function saveVendor() {
-  const name = $('v-name').value.trim();
-  const type = $('v-type').value.trim();
-  const star = parseInt($('v-star').value);
-  const note = $('v-note').value.trim() || '평가 완료';
-
-  if(!name || !type) {
-    alert('업체명과 주요 수행 공종 분류를 기입바랍니다.');
-    return;
-  }
-
-  vendors.unshift({ name, type, star, note });
-  closeModal('vendor');
-  showToast('협력업체 만족도 다면평가 데이터가 기록되었습니다.');
-  
-  $('v-name').value = ''; $('v-type').value = ''; $('v-note').value = '';
-  refreshData();
-}
-
-// 토스트 메시지 알림바 실행기
 function showToast(msg) {
   const t = $('toast');
   t.textContent = msg;
@@ -1679,89 +840,478 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
+// ── MODAL CONTROL ──
+function showModal(type) { $('modal-' + type).classList.add('show'); }
+function closeModal(type) { $('modal-' + type).classList.remove('show'); }
 
-// 11. 엑셀 실제 구조화 다운로드 내장 핵심 모듈 (xlsx.full.min.js 전용 정식 데이터 가공 엔진 보존 및 가동)
-function exportToExcel(pageType) {
-  let data = [];
-  let filename = '시설관리_데이터';
-  const nowStr = new Date().toISOString().split('T')[0];
+// ── SAVE ACTIONS ──
+function saveTask() {
+  const newTask = {
+    type: $('t-type').value,
+    date: new Date().toLocaleDateString('ko-KR').replace(/ /g,'').slice(0,-1),
+    loc: $('t-loc').value || '기타 구역',
+    detail: $('t-detail').value || '상세 내용 없음',
+    vendor: $('t-vendor').value || '자체 부서',
+    status: $('t-status').value,
+    compDate: $('t-status').value === '완료' ? new Date().toLocaleDateString('ko-KR').replace(/ /g,'').slice(0,-1) : ''
+  };
+  tasks.unshift(newTask);
+  localStorage.setItem('ds_tasks', JSON.stringify(tasks));
+  closeModal('task');
+  renderAll();
+  showToast('🛠️ 새로운 시설 관리 정비 업무가 대시보드에 실시간 반영되었습니다.');
+}
 
-  switch(pageType) {
-    case 'dashboard':
-    case 'tasks':
-      data = [['구분', '대상 위치', '상세 보수 조치 내역', '담당자 및 협력업체', '접수 및 처리일', '업무 상태']];
-      tasks.forEach(t => data.push([t.type, t.loc, t.detail, t.vendor, t.date, t.status]));
-      filename = `드림솔_업무통합관리목록_${nowStr}`;
-      break;
+function saveDday() {
+  const n = {
+    id: Date.now(),
+    name: $('d-name').value || '정기 안전 점검',
+    target: $('d-target').value || '건물 전 부문',
+    cycle: $('d-cycle').value,
+    lastDate: $('d-last').value.replace(/-/g, '.'),
+    nextDate: $('d-next').value.replace(/-/g, '.'),
+    status: '미완료'
+  };
+  legals.push(n);
+  localStorage.setItem('ds_legals', JSON.stringify(legals));
+  closeModal('dday');
+  renderAll();
+  showToast('📅 법정 의무 스케줄러 일정이 신규 세팅되었습니다.');
+}
 
-    case 'dday':
-      data = [['관리번호', '법정 검사 선임 대상명', '의무 주기', '차기 검사 예정 기한', '이행 상태', '행정 비고']];
-      legals.forEach(l => data.push([l.id, l.name, l.cycle, l.nextDate, l.status, l.note]));
-      filename = `드림솔_법정의무점검일정표_${nowStr}`;
-      break;
+function saveCost() {
+  const o = parseInt($('c-orig').value) || 0;
+  const f = parseInt($('c-final').value) || 0;
+  const n = {
+    name: $('c-name').value || '시설 소모 자재 구매',
+    date: new Date().toLocaleDateString('ko-KR').replace(/ /g,'').slice(0,-1),
+    orig: o,
+    final: f,
+    note: $('c-note').value || '자체 네고 집행'
+  };
+  costs.unshift(n);
+  localStorage.setItem('ds_costs', JSON.stringify(costs));
+  closeModal('cost');
+  renderAll();
+  showToast('💰 영선 공사 정산 예산 절감 실적이 연동되었습니다.');
+}
 
-    case 'cost':
-      data = [['공사 및 자재 용역명', '최초 설계 견적가(원)', '실행 계약 금액(원)', '절감 성과액(원)', '원가 절감 사유 및 특기사항']];
-      costs.forEach(c => data.push([c.name, c.orig, c.final, c.orig - c.final, c.note]));
-      filename = `드림솔_원가절감_비용집행현황_${nowStr}`;
-      break;
-
-    case 'vendor':
-      data = [['협력업체 상호명', '전문 공종 유형', '종합 평점(점)', '수행 실적 특이사항 레코드']];
-      vendors.forEach(v => data.push([v.name, v.type, v.star, v.note]));
-      filename = `드림솔_협력업체_종합수행평가서_${nowStr}`;
-      break;
-
-    case 'equipment':
-      data = [['설비 대분류', '주요 설비 명칭', '현재 가동 상태', '종합 가동률(%)', '당월 고장 누적시간(H)', '최종 종합 점검일']];
-      equipments.forEach(e => data.push([e.type, e.name, e.status, e.rate, e.breakTime, e.testDate]));
-      filename = `드림솔_핵심기반설비_가동률실적_${nowStr}`;
-      break;
-
-    case 'consumable':
-      data = [['소모품 자재명', '설치 운영 위치', '현재 안전재고 수량', '최종 교체 이력일', '정기 교체주기', '차기 교체 예정 기한', '재고 상태 관리배지']];
-      consumables.forEach(c => data.push([c.name, c.loc, c.stock, c.lastDate, c.cycle, c.nextDate, c.status]));
-      filename = `드림솔_소모성자재_교체주기대장_${nowStr}`;
-      break;
-
-    case 'energy':
-      data = [
-        ['정산 월별 구분', '전기 사용량 (kWh)', '수도 사용량 (톤)', '가스 사용량 (m³)']
-      ];
-      for(let i=0; i<energyData.months.length; i++) {
-        data.push([energyData.months[i], energyData.elec[i], energyData.water[i], energyData.gas[i]]);
-      }
-      filename = `드림솔_에너지원별_사용량현황_${nowStr}`;
-      break;
-
-    case 'report':
-      data = [
-        ['드림솔 시설관리 종합 성과 보고서'],
-        ['보고서 출력일자', nowStr],
-        ['작성 부서 및 담당자', '시설관리팀 준서'],
-        [],
-        ['■ 핵심 성과 지표 요약'],
-        ['지표명', '성과 실적 데이터', '종합 평가 내용'],
-        ['종합 시설업무 완료율', $('rpt-rate').textContent, '목표치 95% 수준 수렴 관리 중'],
-        ['누적 재무 원가 절감액', $('rpt-save').textContent, '비교견적 및 계약협상 최적화 달성'],
-        ['법정의무 검사 준수율', $('rpt-compliance').textContent, '행정 리스크 및 과태료 zero 달성'],
-        ['기반 시설 종합 가동률', $('rpt-uptime').textContent, '안정적 전력 기계 설비 가동 상태 유지']
-      ];
-      filename = `드림솔_시설관리_월간성과보고서_${nowStr}`;
-      break;
-  }
-
-  // SheetJS 워크북 생성 및 강제 파일 스트림 다운로드 실행
-  try {
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Data_Report");
-    XLSX.writeFile(wb, `${filename}.xlsx`);
-  } catch (e) {
-    console.error("Excel download failure: ", e);
-    alert('엑셀 라이브러리 연동 중 예외 오류가 발생하였습니다.');
+function deleteTask(idx) {
+  if(confirm('해당 정비 내역 기록을 삭제하시겠습니까?')) {
+    tasks.splice(idx, 1);
+    localStorage.setItem('ds_tasks', JSON.stringify(tasks));
+    renderAll();
   }
 }
+
+function deleteCost(idx) {
+  if(confirm('지출 집행 내역을 목록에서 제거하시겠습니까?')) {
+    costs.splice(idx, 1);
+    localStorage.setItem('ds_costs', JSON.stringify(costs));
+    renderAll();
+  }
+}
+
+function toggleLegal(id) {
+  legals = legals.map(l => {
+    if(l.id === id) {
+      l.status = l.status === '완료 처리됨' ? '미완료' : '완료 처리됨';
+    }
+    return l;
+  });
+  localStorage.setItem('ds_legals', JSON.stringify(legals));
+  renderAll();
+}
+
+function toggleShowDone() {
+  showDoneTasks = !showDoneTasks;
+  $('toggle-icon').textContent = showDoneTasks ? '👁️' : '🙈';
+  $('toggle-txt').textContent = showDoneTasks ? '완료된 업무 숨기기' : '완료된 업무 보기';
+  renderDashboardTable();
+}
+
+function filterTasks(st) {
+  currentTaskFilter = st;
+  document.querySelectorAll('#task-filters .pill').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  renderMainTaskTable();
+}
+
+function changeStatus(idx, targetStatus) {
+  tasks[idx].status = targetStatus;
+  tasks[idx].compDate = targetStatus === '완료' ? new Date().toLocaleDateString('ko-KR').replace(/ /g,'').slice(0,-1) : '';
+  localStorage.setItem('ds_tasks', JSON.stringify(tasks));
+  renderAll();
+  showToast('상태가 변경되었습니다.');
+}
+
+// ── RENDER ENGINE ──
+function renderAll() {
+  calculateKPI();
+  renderDdayStrip();
+  renderDashboardTable();
+  renderMainTaskTable();
+  renderMainDdayTable();
+  renderMainCostTable();
+  renderVendorTable();
+  renderEquipmentTable();
+  buildCharts();
+  updateReportPage();
+}
+
+function calculateKPI() {
+  const total = tasks.length;
+  const done = tasks.filter(t => t.status === '완료').length;
+  const rate = total ? Math.round((done / total) * 100) : 0;
+  $('kpi-rate').innerHTML = `${rate}<span>%</span>`;
+  $('kpi-rate-sub').textContent = `총 ${total}건 중 ${done}건 완료`;
+
+  const totalSave = costs.reduce((acc, cur) => acc + (cur.orig - cur.final), 0);
+  $('kpi-save').textContent = '₩' + totalSave.toLocaleString();
+  $('kpi-save-sub').textContent = `당월 목표 ₩5,000,000 대비 ${Math.round((totalSave/5000000)*100)}%`;
+
+  const todo = tasks.filter(t => t.status === '미착수').length;
+  $('kpi-todo').innerHTML = `${todo}<span>건</span>`;
+
+  const avgEq = Math.round(equipments.reduce((acc,cur)=>acc+cur.uptime, 0) / equipments.length);
+  $('kpi-uptime').innerHTML = `${avgEq}<span>%</span>`;
+  $('kpi-uptime-sub').textContent = '4개 메인설비 실시간 모니터링';
+
+  const compLeg = legals.filter(l => l.status === '완료 처리됨').length;
+  const legRate = Math.round((compLeg / legals.length) * 100);
+  $('kpi-compliance').innerHTML = `${legRate}<span>%</span>`;
+  $('kpi-compliance-sub').textContent = `상반기 대상 ${legals.length}개 조치 중 ${compLeg}건 완료`;
+}
+
+function renderDdayStrip() {
+  const container = $('dday-strip');
+  container.innerHTML = '<div class="dday-add-btn" onclick="showModal(\'dday\')">＋ 점검 추가</div>';
+  
+  const alerts = [];
+  const now = new Date();
+
+  legals.forEach(l => {
+    const next = new Date(l.nextDate.replace(/\./g, '-'));
+    const diff = next - now;
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    
+    let cls = 'dday-safe';
+    let dtxt = `D-${days}`;
+    
+    if (l.status === '완료 처리됨') {
+      cls = 'dday-completed';
+      dtxt = '완료';
+    } else if (days < 0) {
+      cls = 'dday-over';
+      dtxt = `🟢 기한 초과 (${Math.abs(days)}일)`;
+      alerts.push({ title: l.name, desc: `법정 안전검사 기한이 ${Math.abs(days)}일 도과했습니다! 즉시 검사기관 접수 요망.` });
+    } else if (days <= 7) {
+      cls = 'dday-urgent';
+      alerts.push({ title: l.name, desc: `검사 마감일 기한이 일주일 이내(${days}일)로 다가왔습니다. 필히 일정을 확인하십시오.` });
+    } else if (days <= 30) {
+      cls = 'dday-warn';
+    }
+
+    const card = document.createElement('div');
+    card.className = `dday-card ${cls}`;
+    card.onclick = () => toggleLegal(l.id);
+    card.innerHTML = `
+      <div class="dd-name">${l.name}</div>
+      <div class="dd-num">${dtxt}</div>
+      <div class="dd-date">${l.nextDate} 까지</div>
+    `;
+    container.insertBefore(card, container.firstChild);
+  });
+
+  const aContainer = $('alert-container');
+  aContainer.innerHTML = '';
+  alerts.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'alert-card';
+    div.innerHTML = `<div class="icon">🚨</div><div class="content"><div class="title">${a.title}</div><div class="desc">${a.desc}</div></div>`;
+    aContainer.appendChild(div);
+  });
+}
+
+function renderDashboardTable() {
+  const tbody = document.querySelector('#dash-task-table tbody');
+  tbody.innerHTML = '';
+  
+  let targetTasks = showDoneTasks ? tasks : tasks.filter(t => t.status !== '완료');
+  
+  targetTasks.slice(0, 5).forEach(t => {
+    let sCls = 'b-todo';
+    if(t.status === '진행중') sCls = 'b-wip';
+    if(t.status === '완료') sCls = 'b-done';
+    
+    let tCls = 'tc-complaint';
+    if(t.type === '기계설비') tCls = 'tc-facility';
+    if(t.type === '법정점검') tCls = 'tc-inspect';
+    if(t.type === '전기공사') tCls = 'tc-construction';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="type-chip ${tCls}">${t.type}</span></td>
+      <td><strong>${t.loc}</strong></td>
+      <td>${t.detail}</td>
+      <td style="color:var(--text2)">${t.vendor}</td>
+      <td><span class="badge ${sCls}">${t.status}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderMainTaskTable() {
+  const tbody = document.querySelector('#main-task-table tbody');
+  tbody.innerHTML = '';
+  
+  tasks.forEach((t, idx) => {
+    if(currentTaskFilter !== 'ALL' && t.status !== currentTaskFilter) return;
+
+    let sCls = 'b-todo', tc = 'tc-complaint';
+    if(t.status === '진행중') sCls = 'b-wip';
+    if(t.status === '완료') sCls = 'b-done';
+    if(t.type === '기계설비') tc = 'tc-facility';
+    if(t.type === '법정점검') tc = 'tc-inspect';
+    if(t.type === '전기공사') tc = 'tc-construction';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="type-chip ${tc}">${t.type}</span></td>
+      <td style="font-family:var(--mono); font-size:11px">${t.date}</td>
+      <td><strong>${t.loc}</strong></td>
+      <td>${t.detail}</td>
+      <td>${t.vendor}</td>
+      <td style="font-family:var(--mono); font-size:11px">${t.compDate || '—'}</td>
+      <td>
+        <select onchange="changeStatus(${idx}, this.value)" style="font-size:11px; padding:2px;">
+          <option value="미착수" ${t.status==='미착수'?'selected':''}>미착수</option>
+          <option value="진행중" ${t.status==='진행중'?'selected':''}>진행중</option>
+          <option value="완료" ${t.status==='완료'?'selected':''}>완료</option>
+        </select>
+      </td>
+      <td><button onclick="deleteTask(${idx})" style="color:var(--red); border:none; background:none; cursor:pointer;">❌</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderMainDdayTable() {
+  const tbody = document.querySelector('#main-dday-table tbody');
+  tbody.innerHTML = '';
+  
+  legals.forEach(l => {
+    const now = new Date();
+    const next = new Date(l.nextDate.replace(/\./g, '-'));
+    const days = Math.ceil((next - now) / (1000*60*60*24));
+    
+    let sCls = 'b-incomplete', txt = '점검 미필';
+    if(l.status === '완료 처리됨') { sCls = 'b-complete'; txt = '수검 완료'; }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${l.name}</strong></td>
+      <td>${l.target}</td>
+      <td><span class="type-chip tc-facility">${l.cycle}</span></td>
+      <td style="font-family:var(--mono)">${l.lastDate}</td>
+      <td style="font-family:var(--mono)">${l.nextDate}</td>
+      <td style="font-family:var(--mono); font-weight:700; color:var(--red)">${l.status==='완료 처리됨'?'—': (days<0?`초과 ${Math.abs(days)}일`:`D-${days}`)}</td>
+      <td><span class="badge ${sCls}" onclick="toggleLegal(${l.id})">${txt}</span></td>
+      <td><button onclick="toggleLegal(${l.id})" style="font-size:10px; padding:3px 6px;">상태변경</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderMainCostTable() {
+  const tbody = document.querySelector('#main-cost-table tbody');
+  tbody.innerHTML = '';
+  
+  costs.forEach((c, idx) => {
+    const diff = c.orig - c.final;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${c.name}</strong></td>
+      <td style="font-family:var(--mono); font-size:11px">${c.date}</td>
+      <td style="font-family:var(--mono)">${c.orig.toLocaleString()}원</td>
+      <td style="font-family:var(--mono); font-weight:600">${c.final.toLocaleString()}원</td>
+      <td class="cost-save-val">▲ ${diff.toLocaleString()}원 절감</td>
+      <td style="color:var(--text2); font-size:11px">${c.note}</td>
+      <td><button onclick="deleteCost(${idx})" style="color:var(--red); border:none; background:none; cursor:pointer;">❌</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderVendorTable() {
+  const tbody = document.querySelector('#main-vendor-table tbody');
+  tbody.innerHTML = '';
+  vendors.forEach(v => {
+    let stars = '★'.repeat(v.score) + '☆'.repeat(5-v.score);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${v.name}</strong></td>
+      <td><span class="type-chip tc-construction">${v.type}</span></td>
+      <td style="font-family:var(--mono)">${v.tel}</td>
+      <td><span class="star">${stars}</span></td>
+      <td style="font-family:var(--mono)">${v.date}</td>
+      <td style="font-size:11px; color:var(--text2)">${v.desc}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderEquipmentTable() {
+  const tbody = document.querySelector('#main-eq-table tbody');
+  tbody.innerHTML = '';
+  equipments.forEach(e => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${e.name}</strong></td>
+      <td>${e.loc}</td>
+      <td style="font-family:var(--mono)">${e.code}</td>
+      <td><span class="badge b-done">● ${e.status}</span></td>
+      <td style="font-family:var(--mono); font-weight:700">${e.uptime}%</td>
+      <td style="font-family:var(--mono)">${e.last}</td>
+      <td><button style="font-size:10px; padding:2px 6px;">로그분석</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function updateReportPage() {
+  $('rpt-rate').textContent = $('kpi-rate').textContent;
+  $('rpt-save').textContent = $('kpi-save').textContent;
+  $('rpt-compliance').textContent = $('kpi-compliance').textContent;
+  $('rpt-uptime').textContent = $('kpi-uptime').textContent;
+}
+
+// ── GRAPH PLOTTING SYSTEM (CHART.JS 연동) ──
+let c1=null, c2=null, c3=null, c4=null, c5=null;
+function buildCharts() {
+  if(c1) c1.destroy(); if(c2) c2.destroy(); if(c3) c3.destroy();
+
+  // 1. 바 차트
+  c1 = new Chart($('bar-chart'), {
+    type: 'bar',
+    data: {
+      labels: ['12월', '1월', '2월', '3월', '4월', '5월'],
+      datasets: [
+        { label: '조치완료', data: [14, 18, 12, 22, 19, tasks.filter(t=>t.status==='완료').length], backgroundColor: '#3b82f6', borderRadius: 4 },
+        { label: '미착수/진행', data: [2, 1, 3, 0, 2, tasks.filter(t=>t.status!=='완료').length], backgroundColor: '#fca5a5', borderRadius: 4 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { stacked: true }, y: { stacked: true } } }
+  });
+
+  // 2. 라인 차트
+  const currentTotalSave = costs.reduce((acc, cur) => acc + (cur.orig - cur.final), 0) / 10000;
+  c2 = new Chart($('line-chart'), {
+    type: 'line',
+    data: {
+      labels: ['3월', '4월', '5월'],
+      datasets: [{ label: '절감실적', data: [110, 180, currentTotalSave], borderColor: '#10b981', tension: 0.2, fill: false, pointBackgroundColor: '#10b981' }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+
+  // 3. 도넛 링 차트
+  const types = { '영선보수':0, '기계설비':0, '법정점검':0, '전기공사':0 };
+  tasks.forEach(t => { if(types[t.type]!==undefined) types[t.type]++; });
+
+  c3 = new Chart($('ring-chart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(types),
+      datasets: [{ data: Object.values(types), backgroundColor: ['#8b5cf6', '#3b82f6', '#f59e0b', '#10b981'], borderWidth: 0 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
+  });
+
+  // 우측 범례 수치 갱신
+  const stats = $('ring-stats');
+  stats.innerHTML = '';
+  const colors = ['#8b5cf6', '#3b82f6', '#f59e0b', '#10b981'];
+  Object.keys(types).forEach((k, idx) => {
+    const div = document.createElement('div');
+    div.className = 'rs';
+    div.innerHTML = `<div class="rl"><span style="display:inline-block; width:6px; height:6px; background:${colors[idx]}; border-radius:50%; margin-right:4px;"></span>${k}</div><div class="rv">${types[k]}건</div>`;
+    stats.appendChild(div);
+  });
+}
+
+function renderEnergyCharts() {
+  if(c4) c4.destroy(); if(c5) c5.destroy();
+  c4 = new Chart($('energy-trend-chart'), {
+    type: 'bar',
+    data: {
+      labels: ['1월', '2월', '3월', '4월', '5월'],
+      datasets: [
+        { label: '전력 (kWh)', data: [4500, 4800, 4200, 3900, 4100], backgroundColor: '#3b82f6' },
+        { label: '가스 (m³)', data: [3100, 2900, 1800, 900, 500], backgroundColor: '#f59e0b' }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  c5 = new Chart($('energy-pie-chart'), {
+    type: 'pie',
+    data: {
+      labels: ['일반 전력비', '냉난방 가스비', '상하수도 요금'],
+      datasets: [{ data: [65, 20, 15], backgroundColor: ['#2563eb', '#f59e0b', '#10b981'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
+// ── ORIGINAL EXCEL EXPORT SCRIPT ──
+function exportToExcel(type) {
+  let data = [];
+  let filename = '드림솔_데이터';
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+
+  if (type === 'task' || type === 'dashboard') {
+    data = [['유형', '등록일자', '위치 및 대상설비', '상세 점검 및 조치내역', '협력업체/담당', '완료일자', '진행상태']];
+    tasks.forEach(t => data.push([t.type, t.date, t.loc, t.detail, t.vendor, t.compDate || '—', t.status]));
+    filename = `드림솔_시설보수일지_${dateStr}`;
+  } else if (type === 'legal') {
+    data = [['의무 검사/점검 명칭', '관리 대상 범위', '점검 주기', '최근 최종 수검일', '차기 예정 기한일', '진행 수검 상태']];
+    legals.forEach(l => data.push([l.name, l.target, l.cycle, l.lastDate, l.nextDate, l.status]));
+    filename = `드림솔_법정검사일정_${dateStr}`;
+  } else if (type === 'cost') {
+    data = [['공사 및 구매 내역명', '집행 일자', '최초 도급 견적액', '실행 정산 정산액', '예산 절감액', '절감 사유 비고']];
+    costs.forEach(c => data.push([c.name, c.date, c.orig, c.final, c.orig - c.final, c.note]));
+    filename = `드림솔_공사비용절감실적_${dateStr}`;
+  } else if (type === 'energy') {
+    data = [
+      ['월별', '전력 사용량 (kWh)', '가스 사용량 (m³)'],
+      ['1월', 4500, 3100], ['2월', 4800, 2900], ['3월', 4200, 1800], ['4월', 3900, 900], ['5월', 4100, 500]
+    ];
+    filename = `드림솔_에너지에너지현황_${dateStr}`;
+  } else if (type === 'report') {
+    data = [
+      ['드림솔 시설관리 월간 성과 요약 보고서'],
+      ['보고서 생성일', dateStr],
+      ['운영 담당자', '준서'],
+      [],
+      ['핵심 운영 성과 지표 (KPI)', '현재 실적 수치'],
+      ['민원 정비 업무 완료율', $('kpi-rate').textContent],
+      ['누적 예산 절감액', $('kpi-save').textContent],
+      ['미착수 지연 업무 건수', $('kpi-todo').textContent],
+      ['핵심 설비 평균 가동률', $('kpi-uptime').textContent],
+      ['법정 의무검사 준수율', $('kpi-compliance').textContent]
+    ];
+    filename = `드림솔_시설종합성과보고서_${dateStr}`;
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "데이터_시트");
+  XLSX.writeFile(wb, `${filename}.xlsx`);
+  showToast('📊 엑셀 파일 다운로드가 시작되었습니다.');
+}
 </script>
+
 </body>
 </html>
