@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>(주)드림솔 시설관리 통합 대시보드 v2.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #cbd5e1; display: grid; gap: 20px; grid-template-columns: 1fr; min-height: 100vh; padding: 20px 0; place-items: center; font-family: 'Inter', 'Noto Sans KR', sans-serif; }
+        .slide-canvas { background-color: #f8fafc; box-shadow: 0 15px 35px rgba(0,0,0,0.2); display: flex; width: 1280px; height: 720px; position: relative; overflow: hidden; }
+        .sidebar { background-color: #0f172a; width: 240px; height: 100%; padding: 30px 18px; display: flex; flex-direction: column; gap: 35px; flex-shrink: 0; }
+        .sidebar .logo { color: #10b981; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .sidebar nav ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .sidebar nav li { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 6px; color: #94a3b8; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+        .sidebar nav li.active { background-color: #1e293b; color: #ffffff; font-weight: 500; }
+        .sidebar nav li:hover:not(.active) { background-color: #1e293b; color: #f1f5f9; }
+        .main-viewport { flex-grow: 1; padding: 25px 35px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; width: calc(100% - 240px); }
+        .top-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+        .top-header h1 { color: #1e293b; font-size: 22px; font-weight: 700; }
+        .top-header .meta-info { display: flex; gap: 15px; font-size: 13px; color: #64748b; }
+        .top-header .meta-info span .bold { color: #0f172a; font-weight: 600; }
+        .section-title { font-size: 15px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+        .section-title i { color: #10b981; }
+        .dday-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .dday-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #ef4444; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .dday-card .info { display: flex; flex-direction: column; gap: 4px; }
+        .dday-card .info .t { font-size: 12px; color: #64748b; font-weight: 500; }
+        .dday-card .info .d { font-size: 11px; color: #94a3b8; }
+        .dday-card .val { font-size: 20px; font-weight: 700; color: #ef4444; background: #fee2e2; padding: 4px 10px; border-radius: 6px; }
+        .graph-container-box { display: flex; gap: 20px; min-height: 250px; }
+        .graph-left-stack { flex: 6; display: flex; flex-direction: column; gap: 15px; }
+        .graph-right-single { flex: 4; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .chart-mini-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 15px; height: 125px; display: flex; flex-direction: column; justify-content: space-between; }
+        .chart-title { font-size: 12px; font-weight: 600; color: #475569; display: flex; justify-content: space-between; }
+        .content-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .panel-header { font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .table-core { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; table-layout: fixed; }
+        .table-core th { background-color: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 8px 10px; color: #64748b; font-weight: 600; }
+        .table-core td { border-bottom: 1px solid #f1f5f9; padding: 8px 10px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+        .input-table { width: 100%; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; font-family: inherit; color: #334155; }
+        .select-table { width: 100%; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; background-color: #fff; }
+        .btn-mod { background-color: #0f172a; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+        .btn-mod:hover { background-color: #1e293b; }
+    </style>
+</head>
+<body>
+
+<div class="slide-canvas">
+    <div class="sidebar">
+        <div class="logo"><i class="fa-solid fa-building-shield"></i> DREAMSOL FM</div>
+        <nav>
+            <ul>
+                <li class="active"><i class="fa-solid fa-chart-pie"></i> 통합 대시보드</li>
+                <li><i class="fa-solid fa-clipboard-check"></i> 현장 운영 관리</li>
+                <li><i class="fa-solid fa-screwdriver-wrench"></i> 자산 유지보수</li>
+                <li><i class="fa-solid fa-scale-balanced"></i> 법정검사 대장</li>
+                <li><i class="fa-solid fa-receipt"></i> 비용/성과 관리</li>
+            </ul>
+        </nav>
+    </div>
+    
+    <div class="main-viewport">
+        <div class="top-header">
+            <h1>시설관리 부문별 통합 대시보드 v2.0</h1>
+            <div class="meta-info">
+                <span>기준일: <span class="bold">2026. 05. 19</span></span>
+                <span>담당자: <span class="bold">권준서 대리</span></span>
+            </div>
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-bell"></i> 긴급 법정 의무 점검 로드맵 (기한 임박순 정렬)</div>
+        <div class="dday-grid">
+            <div class="dday-card">
+                <div class="info">
+                    <span class="t">생활용수 저수조 수질검사</span>
+                    <span class="d">2026-07-31 수검 예정</span>
+                </div>
+                <span class="val">D-73</span>
+            </div>
+            <div class="dday-card" style="border-left-color: #f59e0b;">
+                <div class="info">
+                    <span class="t">소방 작동기능 점검 및 압력용기 검사</span>
+                    <span class="d">2026-09-30 수검 예정</span>
+                </div>
+                <span class="val" style="color:#d97706; background:#fef3c7;">D-134</span>
+            </div>
+            <div class="dday-card" style="border-left-color: #3b82f6;">
+                <div class="info">
+                    <span class="t">승강기(인승/화물용) 안전검사</span>
+                    <span class="d">2026-11-21 수검 예정</span>
+                </div>
+                <span class="val" style="color:#2563eb; background:#dbeafe;">D-186</span>
+            </div>
+        </div>
+
+        <div class="graph-container-box">
+            <div class="graph-left-stack">
+                <div class="chart-mini-panel">
+                    <div class="chart-title"><span><i class="fa-solid fa-chart-line"></i> 월별 주요 업무 완료 추이 (건수)</span></div>
+                    <div style="height: 90px; width: 100%; position: relative;"><canvas id="trendChart"></canvas></div>
+                </div>
+                <div class="chart-mini-panel">
+                    <div class="chart-title"><span><i class="fa-solid fa-chart-bar"></i> 월별 예산 절감(NEGO) 실적 추이</span><span style="font-size:10px; color:#10b981; font-weight:700;">누적: 1,868,700원</span></div>
+                    <div style="height: 90px; width: 100%; position: relative;"><canvas id="negoChart"></canvas></div>
+                </div>
+            </div>
+            
+            <div class="graph-right-single">
+                <div class="chart-title" style="margin-bottom:5px;"><span><i class="fa-solid fa-chart-pie"></i> 공사 및 업무 유형별 점유 비율</span></div>
+                <div style="flex-grow:1; display:flex; justify-content:center; align-items:center; height:180px;"><canvas id="typeChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="content-panel">
+            <div class="panel-header"><span><i class="fa-solid fa-comment-dollar" style="color:#8b5cf6; margin-right:6px;"></i> 당해년도 주요 자산 도입 및 공사 절감(NEGO) 상세 대장</span></div>
+            <table class="table-core">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">공사 및 도입 자산명</th>
+                        <th style="width: 15%;">요청 부서</th>
+                        <th style="width: 15%;">기존 견적가</th>
+                        <th style="width: 15%;">최종 실행가</th>
+                        <th style="width: 15%;">절감 실적 (SAVE)</th>
+                        <th style="width: 20%;">비고 / 조치 파트너사</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:600;">쓰레기통 커버 제작 설치건</td>
+                        <td>총무운영팀</td>
+                        <td>1,330,000원</td>
+                        <td>483,000원</td>
+                        <td style="color:#15803d; font-weight:700;">▼ 847,000원</td>
+                        <td>사옥 영선 자체 시공 처리</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;">AED(제세동기) 1층/5층 신규 도입</td>
+                        <td>보건안전관리부</td>
+                        <td>7,128,000원</td>
+                        <td>6,160,000원</td>
+                        <td style="color:#15803d; font-weight:700;">▼ 968,000원</td>
+                        <td>리하트 유닛 기기 조율 공급</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;">스크류 콤프레샤 소모품 교체</td>
+                        <td>생산공정팀</td>
+                        <td>953,000원</td>
+                        <td>900,000원</td>
+                        <td style="color:#15803d; font-weight:700;">▼ 53,000원</td>
+                        <td>경원콤프레샤 단가 서류 네고</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="content-panel">
+            <div class="panel-header"><span><i class="fa-solid fa-scale-balanced" style="color:#eab308; margin-right:6px;"></i> 법정 의무 주기 검사 대장 (상태 변경 시 완료일 자동 입력)</span></div>
+            <table class="table-core">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">관리 번호</th>
+                        <th style="width: 28%;">법정 의무 검사 종류</th>
+                        <th style="width: 20%;">점검/수검 상태</th>
+                        <th style="width: 18%;">차기 예정일</th>
+                        <th style="width: 14%;">완료 처리일</th>
+                        <th style="width: 8%; text-align:center;">저장</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>관리-023</td>
+                        <td><input type="text" class="input-table" value="LPG 사용시설 정기검사 (가스안전공사)"></td>
+                        <td>
+                            <select class="select-table" onchange="autoDate(this)">
+                                <option value="수검완료" selected>수검완료 (1년 주기)</option>
+                                <option value="진행중">점검 예정/대기</option>
+                            </select>
+                        </td>
+                        <td><input type="date" class="input-table" value="2027-03-13"></td>
+                        <td><input type="text" class="input-table target-date" value="2026-03-13" readonly></td>
+                        <td style="text-align:center;"><button class="btn-mod" onclick="alert('저장되었습니다.')">수정</button></td>
+                    </tr>
+                    <tr>
+                        <td>관리-016</td>
+                        <td><input type="text" class="input-table" value="생활용수 물탱크 저수조 청소 및 검사"></td>
+                        <td>
+                            <select class="select-table" onchange="autoDate(this)">
+                                <option value="수검완료">수검완료 (연 2회)</option>
+                                <option value="진행중" selected>점검 예정/대기</option>
+                            </select>
+                        </td>
+                        <td><input type="date" class="input-table" value="2026-07-31"></td>
+                        <td><input type="text" class="input-table target-date" value="미완료" style="color:#ef4444;" readonly></td>
+                        <td style="text-align:center;"><button class="btn-mod" onclick="alert('저장되었습니다.')">수정</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="content-panel">
+            <div class="panel-header"><span><i class="fa-solid fa-list-check" style="color:#2563eb; margin-right:6px;"></i> 현장 일반 민원 및 주요 설비 보수 대장</span></div>
+            <table class="table-core">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">대상 위치/설비</th>
+                        <th style="width: 33%;">보수 및 긴급 민원 조치 내용</th>
+                        <th style="width: 15%;">작업 상태</th>
+                        <th style="width: 15%;">협력업체</th>
+                        <th style="width: 14%;">완료 처리일</th>
+                        <th style="width: 8%; text-align:center;">저장</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>5층 주방 싱크대</td>
+                        <td><input type="text" class="input-table" value="배수관 역류 및 배수 정체 배관 긴급 통수 조치"></td>
+                        <td>
+                            <select class="select-table" onchange="autoDate(this)">
+                                <option value="조치완료">조치완료</option>
+                                <option value="진행중" selected>진행중</option>
+                            </select>
+                        </td>
+                        <td><input type="text" class="input-table" value="삼형기계"></td>
+                        <td><input type="text" class="input-table target-date" value="미완료" style="color:#ef4444;" readonly></td>
+                        <td style="text-align:center;"><button class="btn-mod" onclick="alert('저장되었습니다.')">수정</button></td>
+                    </tr>
+                    <tr>
+                        <td>지하주차장 전동</td>
+                        <td><input type="text" class="input-table" value="형광등 노후 파손 3개소 현장 자재 활용 자체 교체"></td>
+                        <td>
+                            <select class="select-table" onchange="autoDate(this)">
+                                <option value="조치완료" selected>조치완료</option>
+                                <option value="진행중">진행중</option>
+                            </select>
+                        </td>
+                        <td><input type="text" class="input-table" value="시설팀 자체"></td>
+                        <td><input type="text" class="input-table target-date" value="2026-05-12" readonly></td>
+                        <td style="text-align:center;"><button class="btn-mod" onclick="alert('저장되었습니다.')">수정</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function autoDate(selectElement) {
+    var row = selectElement.closest('tr');
+    var dateInput = row.querySelector('.target-date');
+    if (selectElement.value === '수검완료' || selectElement.value === '조치완료') {
+        var today = new Date();
+        var yyyy = today.getFullYear();
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var dd = String(today.getDate()).padStart(2, '0');
+        dateInput.value = yyyy + '-' + mm + '-' + dd;
+        dateInput.style.color = '#15803d';
+    } else {
+        dateInput.value = '미완료';
+        dateInput.style.color = '#ef4444';
+    }
+}
+
+window.onload = function() {
+    new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+            labels: ['1월', '2월', '3월', '4월', '5월'],
+            datasets: [{ label: '완료 건수', data: [12, 19, 15, 22, 17], borderColor: '#3b82f6', borderWidth: 2, fill: false, tension: 0.1 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+
+    new Chart(document.getElementById('negoChart'), {
+        type: 'bar',
+        data: {
+            labels: ['콤프레샤 단가', '쓰레기통 자체시공', 'AED 최적도입'],
+            datasets: [{ label: '절감액 (원)', data: [53000, 847000, 968000], backgroundColor: '#10b981', borderRadius: 4 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+
+    new Chart(document.getElementById('typeChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['기계/콤프레샤', '건물 영선', '전기실 계측', '소방/안전용기'],
+            datasets: [{ data: [35, 25, 20, 20], backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } } } }
+    });
+};
+</script>
+</body>
+</html>
