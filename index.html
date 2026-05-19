@@ -8,479 +8,350 @@
 <meta name="apple-mobile-web-app-title" content="드림솔 시설관리">
 <meta name="theme-color" content="#0f1c3f">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230f1c3f' width='100' height='100'/><text y='70' x='50' text-anchor='middle' font-size='60' fill='%23fff'>🏢</text></svg>">
-<title>드림솔 시설관리 통합 대시보드</title>
+<title>드림솔 시설관리 통합 대시보드 v2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root {
-    --bg-main: #f1f5f9;
-    --sidebar-bg: #0f1c3f;
-    --card-bg: #ffffff;
-    --text-primary: #1e293b;
-    --text-muted: #64748b;
-    --border-color: #e2e8f0;
-    --primary: #2563eb;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; -webkit-tap-highlight-color: transparent; }
-  body { background-color: var(--bg-main); color: var(--text-primary); display: flex; min-height: 100vh; overflow: hidden; font-size: 14px; }
-  
-  /* 사이드바 */
-  .sidebar { width: 240px; background-color: var(--sidebar-bg); color: #fff; padding: 24px; display: flex; flex-direction: column; gap: 32px; flex-shrink: 0; box-shadow: 2px 0 8px rgba(0,0,0,0.05); }
-  .sidebar .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; padding: 0 8px; }
-  .sidebar .logo span { color: var(--success); }
-  .sidebar nav ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-  .sidebar nav li { padding: 12px 16px; border-radius: 8px; color: #94a3b8; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
-  .sidebar nav li.active { background-color: rgba(255,255,255,0.1); color: #fff; font-weight: 700; }
-  .sidebar nav li:hover:not(.active) { background-color: rgba(255,255,255,0.05); color: #f1f5f9; }
-  
-  /* 메인 영역 */
-  .main-content { flex-grow: 1; padding: 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; height: 100vh; }
-  .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
-  .header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
-  .header .meta { font-size: 14px; color: var(--text-muted); font-weight: 500; }
-  
-  .view-panel { display: none; flex-direction: column; gap: 24px; }
-  .view-panel.active { display: flex; }
-  
-  /* 4. 법정점검 디데이 알림 기한 임박순 정렬 레이아웃 */
-  .dday-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .dday-card { background: var(--card-bg); border: 1px solid var(--border-color); border-left: 5px solid var(--danger); border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-  .dday-card .info { display: flex; flex-direction: column; gap: 4px; }
-  .dday-card .info .title { font-size: 15px; font-weight: 700; }
-  .dday-card .info .target { font-size: 12px; color: var(--text-muted); }
-  .dday-card .days { font-size: 20px; font-weight: 700; color: var(--danger); background: #fee2e2; padding: 4px 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; }
-  .dday-card.warning { border-left-color: var(--warning); }
-  .dday-card.warning .days { color: var(--warning); background: #fef3c7; }
-  .dday-card.info { border-left-color: var(--primary); }
-  .dday-card.info .days { color: var(--primary); background: #dbeafe; }
-  
-  /* 1 & 3. 설비가동률 제거 및 불필요 항목 제외 요약카드 */
-  .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-  .summary-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
-  .summary-card .label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
-  .summary-card .value { font-size: 24px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-  
-  /* 5. 그래프 레이아웃 수정: 좌측에 완료추이/비용절감 상하배치 + 우측에 업무유형별 배치 */
-  .dashboard-grid { display: grid; grid-template-columns: 6fr 4fr; gap: 24px; }
-  .graph-left-stack { display: flex; flex-direction: column; gap: 16px; }
-  .chart-panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 16px; }
-  .chart-panel.fixed-height { height: 220px; }
-  .chart-panel.full-height { height: 456px; }
-  .chart-panel-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-  .chart-wrapper { position: relative; flex-grow: 1; width: 100%; height: 100%; }
-  
-  /* 테이블 양식 */
-  .content-panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-  .panel-header { display: flex; justify-content: space-between; align-items: center; }
-  .panel-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-  
-  .table-container { overflow-x: auto; }
-  .table-core { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-  .table-core th { background-color: #f8fafc; padding: 12px 16px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
-  .table-core td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-  
-  .input-table { width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; transition: border 0.15s; background: #fff; }
-  .input-table:focus { border-color: var(--primary); }
-  .select-table { width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #fff; }
-  
-  .btn { padding: 8px 14px; border-radius: 6px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s; }
-  .btn-primary { background: var(--primary); color: #fff; }
-  .btn-primary:hover { background: #1d4ed8; }
-  .btn-success { background: var(--success); color: #fff; }
-  .btn-success:hover { background: #059669; }
-  .btn-danger { background: var(--danger); color: #fff; padding: 6px 10px; font-size: 12px; }
-  .btn-danger:hover { background: #dc2626; }
-</style>
-</head>
-<body>
-
-<div class="sidebar">
-  <div class="logo">🏢 드림솔 <span>FM</span></div>
-  <nav>
-    <ul>
-      <li class="active" onclick="switchView('dashboard')">📊 통합 대시보드</li>
-      <li onclick="switchView('tasks')">🛠️ 현장 운영 관리</li>
-      <li onclick="switchView('legal')">⚖️ 법정검사 대장</li>
-      <li onclick="switchView('costs')">💵 비용/성과 관리</li>
-    </ul>
-  </nav>
-</div>
-
-<div class="main-content">
-  <div class="header">
-    <h1 id="page-title">통합 프로세스 관리 대시보드</h1>
-    <div class="meta">기준일시: 2026-05-19 | 담당자: 준서 대리</div>
-  </div>
-
-  <div id="view-dashboard" class="view-panel active">
-    <div class="dday-grid">
-      <div class="dday-card">
-        <div class="info">
-          <span class="title">생활용수 저수조 수질검사</span>
-          <span class="target">2026-07-31 수검 예정</span>
-        </div>
-        <span class="days">D-73</span>
-      </div>
-      <div class="dday-card warning">
-        <div class="info">
-          <span class="title">소방 작동기능 및 압력용기 검사</span>
-          <span class="target">2026-09-30 수검 예정</span>
-        </div>
-        <span class="days">D-134</span>
-      </div>
-      <div class="dday-card info">
-        <div class="info">
-          <span class="title">승강기 안전성 종합검사</span>
-          <span class="target">2026-11-21 수검 예정</span>
-        </div>
-        <span class="days">D-186</span>
-      </div>
-    </div>
-
-    <div class="summary-grid">
-      <div class="summary-card">
-        <span class="label">당월 시설 현장 업무 완료율</span>
-        <span class="value" id="rpt-rate" style="color: var(--primary);">0%</span>
-      </div>
-      <div class="summary-card">
-        <span class="label">당해년도 누적 비용 절감액 (SAVE 실적)</span>
-        <span class="value" id="rpt-save" style="color: var(--success);">0원</span>
-      </div>
-    </div>
-
-    <div class="dashboard-grid">
-      <div class="graph-left-stack">
-        <div class="chart-panel fixed-height">
-          <div class="chart-panel-title">📈 월별 주요 시설 민원 및 보수 완료 추이 (건수)</div>
-          <div class="chart-wrapper"><canvas id="taskTrendChart"></canvas></div>
-        </div>
-        <div class="chart-panel fixed-height">
-          <div class="chart-panel-title">💰 내역별 비용 관리 절감 실적 (SAVE 금액 현황)</div>
-          <div class="chart-wrapper"><canvas id="costSaveChart"></canvas></div>
-        </div>
-      </div>
-      <div class="chart-panel full-height">
-        <div class="chart-panel-title">📊 대장 등록 업무 유형별 실무 분포 비율</div>
-        <div class="chart-wrapper"><canvas id="workTypePieChart"></canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="view-tasks" class="view-panel">
-    <div class="content-panel">
-      <div class="panel-header">
-        <span class="panel-title">🛠️ 현장 일반 민원 및 주요 설비 보수 현황대장</span>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-primary" onclick="openAddTaskRow()">+ 신규 조치내역 등록</button>
-          <button class="btn btn-success" onclick="downloadExcel('task')">Excel 다운로드</button>
-        </div>
-      </div>
-      <div class="table-container">
-        <table class="table-core">
-          <thead>
-            <tr>
-              <th style="width: 15%;">대상 위치/설비</th>
-              <th style="width: 38%;">보수 및 긴급 민원 조치 조치 내용</th>
-              <th style="width: 15%;">작업 상태</th>
-              <th style="width: 14%;">협력업체</th>
-              <th style="width: 12%;">완료 처리일</th>
-              <th style="width: 6%; text-align:center;">삭제</th>
-            </tr>
-          </thead>
-          <tbody id="taskTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div id="view-legal" class="view-panel">
-    <div class="content-panel">
-      <div class="panel-header">
-        <span class="panel-title">⚖️ 법정 의무 주기 검사 관리 대장</span>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-primary" onclick="openAddLegalRow()">+ 신규 법정검사 등록</button>
-          <button class="btn btn-success" onclick="downloadExcel('legal')">Excel 다운로드</button>
-        </div>
-      </div>
-      <div class="table-container">
-        <table class="table-core">
-          <thead>
-            <tr>
-              <th style="width: 15%;">관리 번호</th>
-              <th style="width: 35%;">법정 의무 검사 종류</th>
-              <th style="width: 15%;">검사/수검 상태</th>
-              <th style="width: 15%;">차기 예정일</th>
-              <th style="width: 14%;">완료 처리일</th>
-              <th style="width: 6%; text-align:center;">삭제</th>
-            </tr>
-          </thead>
-          <tbody id="legalTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div id="view-costs" class="view-panel">
-    <div class="content-panel">
-      <div class="panel-header">
-        <span class="panel-title">💵 당해년도 주요 자산 도입 및 공사 비용절감 대장</span>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-primary" onclick="openAddCostRow()">+ 신규 절감 내역 등록</button>
-          <button class="btn btn-success" onclick="downloadExcel('cost')">Excel 다운로드</button>
-        </div>
-      </div>
-      <div class="table-container">
-        <table class="table-core">
-          <thead>
-            <tr>
-              <th style="width: 22%;">공사 및 도입 자산명</th>
-              <th style="width: 14%;">요청 부서</th>
-              <th style="width: 14%;">기존 견적가 (원)</th>
-              <th style="width: 14%;">최종 실행가 (원)</th>
-              <th style="width: 14%;">절감 실적 (SAVE)</th>
-              <th style="width: 16%;">비고 (조치 내역)</th>
-              <th style="width: 6%; text-align:center;">삭제</th>
-            </tr>
-          </thead>
-          <tbody id="costTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-// 초기 원본 데이터 정의셋
-let tasks = [
-  { loc: '5층 주방 싱크대', detail: '배수관 역류 현상 긴급 통수 및 배관 세척 작업', status: '진행중', vendor: '삼형기계', compDate: '미완료' },
-  { loc: '지하주차장 전동', detail: '노후 형광등 안정기 파손 부품 3개소 교체 완료', status: '조치완료', vendor: '시설팀 자체', compDate: '2026-05-12' }
-];
-
-let legals = [
-  { id: '관리-023', name: 'LPG 사용시설 정기검사', status: '수검완료', nextDate: '2027-03-13', compDate: '2026-03-13' },
-  { id: '관리-016', name: '생활용수 저수조 청소 및 검사', status: '점검예정', nextDate: '2026-07-31', compDate: '미완료' }
-];
-
-// 2. 비용관리 항목 구조 개선 (요청부서 추가 완료)
-let costs = [
-  { name: '쓰레기통 커버 제작 설치건', dept: '총무운영팀', orig: 1330000, final: 483000, note: '사옥 영선 자체 시공' },
-  { name: 'AED(제세동기) 1층/5층 도입', dept: '보건안전관리부', orig: 7128000, final: 6160000, note: '리하트 유닛 기기 공급 조율' },
-  { name: '스크류 콤프레샤 소모품 교체', dept: '생산공정팀', orig: 953000, final: 900000, note: '경원콤프레샤 서류 네고' }
-];
-
-let charts = {};
-
-function switchView(viewName) {
-  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.sidebar nav li').forEach(l => l.classList.remove('active'));
-  
-  document.getElementById('view-' + viewName).classList.add('active');
-  const targetLi = [...document.querySelectorAll('.sidebar nav li')].find(l => {
-    if (viewName === 'dashboard') return l.textContent.includes('통합 대시보드');
-    if (viewName === 'tasks') return l.textContent.includes('현장 운영 관리');
-    if (viewName === 'legal') return l.textContent.includes('법정검사 대장');
-    return l.textContent.includes('비용/성과 관리');
-  });
-  if (targetLi) targetLi.classList.add('active');
-  
-  if (viewName === 'dashboard') {
-    calculateMetrics();
-    renderCharts();
-  }
+:root {
+  --navy: #0f1c3f;
+  --navy2: #1a2e5a;
+  --navy3: #253d72;
+  --accent: #3b82f6;
+  --accent2: #60a5fa;
+  --green: #10b981;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --purple: #8b5cf6;
+  --bg: #f0f4fa;
+  --surface: #ffffff;
+  --surface2: #f8fafd;
+  --border: rgba(15,28,63,0.1);
+  --border2: rgba(15,28,63,0.06);
+  --text: #0f1c3f;
+  --text2: #4a5a7a;
+  --text3: #8899bb;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Noto Sans KR', sans-serif;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
 }
 
-// 6 & 7. 상태 변경 시 변경 날짜(오늘) 자동 기입 시스템
-function updateTaskStatus(idx, el) {
-  tasks[idx].status = el.value;
-  if (el.value === '조치완료') {
-    tasks[idx].compDate = new Date().toISOString().substring(0, 10);
-  } else {
-    tasks[idx].compDate = '미완료';
-  }
-  renderTasks();
-  calculateMetrics();
+/* ── LAYOUT ── */
+.shell { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 220px; min-height: 100vh;
+  background: var(--navy);
+  padding: 0;
+  flex-shrink: 0;
+  display: flex; flex-direction: column;
+}
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.sidebar-logo .co { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+.sidebar-logo .sub { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+.sidebar-logo .badge {
+  display: inline-block; margin-top: 8px;
+  background: var(--accent); color: #fff;
+  font-size: 9px; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; letter-spacing: 0.5px;
+}
+.nav { padding: 16px 0; flex: 1; }
+.nav-label {
+  font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.3);
+  letter-spacing: 1.5px; padding: 8px 20px 4px; text-transform: uppercase;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px; font-size: 12px; color: rgba(255,255,255,0.55);
+  cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent;
+}
+.nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.nav-item.active { color: #fff; border-left-color: var(--accent); background: rgba(59,130,246,0.12); }
+.nav-item .ico { font-size: 15px; width: 18px; text-align: center; }
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  font-size: 10px; color: rgba(255,255,255,0.3);
+}
+.sidebar-footer .name { color: rgba(255,255,255,0.7); font-weight: 500; font-size: 11px; }
+
+.main { flex: 1; padding: 28px 32px; overflow-x: hidden; }
+.page { display: none; width: 100%; }
+.page.active { display: block; }
+
+/* ── TOP BAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+.topbar h1 { font-size: 18px; font-weight: 700; color: var(--text); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.date-chip {
+  font-family: var(--mono); font-size: 11px; color: var(--text2);
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 5px 12px; border-radius: 20px;
+}
+.btn-primary {
+  background: var(--navy); color: #fff;
+  font-size: 11px; font-weight: 500; padding: 6px 14px;
+  border-radius: var(--radius-sm); border: none; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: var(--navy2); }
+.btn-export {
+  background: var(--green); color: #fff;
+  font-size: 11px; font-weight: 500; padding: 6px 14px;
+  border-radius: var(--radius-sm); border: none; cursor: pointer;
+}
+.btn-export:hover { opacity: 0.9; }
+
+/* ── SECTIONS ── */
+.section-title {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  letter-spacing: 1.2px; text-transform: uppercase;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border2);
 }
 
-function updateLegalStatus(idx, el) {
-  legals[idx].status = el.value;
-  if (el.value === '수검완료') {
-    legals[idx].compDate = new Date().toISOString().substring(0, 10);
-  } else {
-    legals[idx].compDate = '미완료';
-  }
-  renderLegals();
-  calculateMetrics();
+/* ── KPI CARDS ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px; margin-bottom: 28px;
+}
+.kpi-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 14px;
+  position: relative; overflow: hidden;
+}
+.kpi-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.kpi-card.blue::before { background: var(--accent); }
+.kpi-card.green::before { background: var(--green); }
+.kpi-card.red::before { background: var(--red); }
+.kpi-card.amber::before { background: var(--amber); }
+.kpi-card.purple::before { background: var(--purple); }
+.kpi-card.navy::before { background: var(--navy); }
+.kpi-label {
+  font-size: 10px; color: var(--text3); margin-bottom: 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.kpi-value { font-size: 24px; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 6px; font-family: var(--mono); }
+.kpi-value span { font-size: 13px; font-weight: 400; }
+.kpi-trend { font-size: 10px; font-weight: 500; }
+.up { color: var(--green); } .down { color: var(--red); } .neu { color: var(--text3); }
+
+/* ── DDAY ── */
+.dday-strip {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px; margin-bottom: 28px;
+}
+.dday-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  cursor: pointer; transition: box-shadow 0.15s;
+}
+.dday-card:hover { box-shadow: 0 2px 12px rgba(15,28,63,0.08); }
+.dday-card .dd-name { font-size: 10px; color: var(--text3); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dday-card .dd-num { font-family: var(--mono); font-size: 20px; font-weight: 700; }
+.dday-card .dd-date { font-size: 10px; color: var(--text3); margin-top: 3px; }
+.dday-safe .dd-num { color: var(--text2); }
+.dday-warn { background: #fffbea; border-color: #f5c842; }
+.dday-warn .dd-num { color: #92650a; }
+.dday-urgent { background: #fff1f1; border-color: #fca5a5; }
+.dday-urgent .dd-num { color: var(--red); animation: blink 1s step-end infinite; }
+.dday-over { background: #1a1a2e; border-color: #7f1d1d; }
+.dday-over .dd-num { color: #fc8181; }
+.dday-over .dd-name, .dday-over .dd-date { color: #6b7280; }
+.dday-completed { background: #ecfdf5; border-color: var(--green); }
+.dday-completed .dd-num { color: var(--green); text-decoration: line-through; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.dday-add-btn {
+  background: var(--surface); border: 1px dashed var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 11px; color: var(--text3); cursor: pointer;
+  transition: all 0.15s;
+}
+.dday-add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── CHARTS ROW ── */
+.charts-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+.chart-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+}
+.chart-card .ct { font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 12px; }
+.chart-legend { display: flex; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.chart-legend .leg { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text3); }
+.chart-legend .dot { width: 8px; height: 8px; border-radius: 2px; }
+.ring-wrap { display: flex; align-items: center; justify-content: center; padding: 8px 0; }
+.ring-stats { margin-left: 14px; }
+.ring-stats .rs { margin-bottom: 8px; }
+.ring-stats .rs .rl { font-size: 10px; color: var(--text3); margin-bottom: 2px; }
+.ring-stats .rs .rv { font-size: 16px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+
+/* ── TASK TABLE ── */
+.table-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 14px; overflow: hidden;
+}
+.table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--border2);
+}
+.table-header .th { font-size: 12px; font-weight: 700; color: var(--text); }
+.filter-pills { display: flex; gap: 6px; }
+.pill {
+  font-size: 10px; padding: 4px 12px; border-radius: 20px; cursor: pointer;
+  border: 1px solid var(--border); background: transparent; color: var(--text3);
+  transition: all 0.15s;
+}
+.pill.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+.pill:hover:not(.active) { border-color: var(--text3); color: var(--text2); }
+table { width: 100%; border-collapse: collapse; }
+th {
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  letter-spacing: 0.8px; text-transform: uppercase;
+  padding: 8px 18px; text-align: left;
+  background: var(--surface2); border-bottom: 1px solid var(--border2);
+}
+td { padding: 10px 18px; font-size: 12px; color: var(--text); border-bottom: 1px solid var(--border2); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 500; cursor: pointer; transition: opacity 0.15s;
+}
+.badge:hover { opacity: 0.75; }
+.b-todo { background: #fff1f1; color: #b91c1c; border: 1px solid #fca5a5; }
+.b-wip { background: #fffbea; color: #92400e; border: 1px solid #fcd34d; }
+.b-done { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
+.b-complete { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
+.b-incomplete { background: #fff1f1; color: #b91c1c; border: 1px solid #fca5a5; }
+.type-chip {
+  display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px;
+}
+.tc-complaint { background: #ede9fe; color: #5b21b6; }
+.tc-facility { background: #e0f2fe; color: #075985; }
+.tc-inspect { background: #fef3c7; color: #92400e; }
+.tc-construction { background: #f0fdf4; color: #166534; }
+.add-row-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 18px; font-size: 11px; color: var(--text3);
+  cursor: pointer; border-top: 1px dashed var(--border2);
+  background: var(--surface2); transition: color 0.15s;
+}
+.add-row-btn:hover { color: var(--accent); }
+.done-toggle-btn {
+  font-size: 11px; color: var(--text3); cursor: pointer;
+  padding: 8px 18px; display: inline-flex; align-items: center; gap: 5px;
+}
+.done-toggle-btn:hover { color: var(--accent); }
+
+/* ── COST TABLE ── */
+.cost-save-val { color: var(--green); font-weight: 700; font-family: var(--mono); font-size: 12px; }
+
+/* ── MODAL FORM ── */
+.modal-backdrop {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.45); align-items: center; justify-content: center;
+}
+.modal-backdrop.show { display: flex; }
+.modal {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 24px; width: 480px; max-width: 95vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  max-height: 90vh; overflow-y: auto;
+}
+.modal h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-grid.one { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 10px; color: var(--text3); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+.form-group input, .form-group select, .form-group textarea {
+  font-family: var(--sans); font-size: 12px; color: var(--text);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 8px 12px; outline: none;
+  transition: border-color 0.15s;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+.btn-cancel {
+  font-size: 12px; padding: 7px 16px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: transparent; cursor: pointer;
+  color: var(--text2);
+}
+.btn-save {
+  font-size: 12px; padding: 7px 18px; border-radius: var(--radius-sm);
+  background: var(--accent); border: none; color: #fff; cursor: pointer; font-weight: 500;
 }
 
-// 입력창 내용 실시간 메모리 데이터 결합 바인딩 함수
-function bindTaskInput(idx, field, val) { tasks[idx][field] = val; }
-function bindLegalInput(idx, field, val) { legals[idx][field] = val; }
-function bindCostInput(idx, field, val) { 
-  if (field === 'orig' || field === 'final') {
-    costs[idx][field] = Number(val.replace(/[^0-9]/g, '')) || 0;
-    renderCosts();
-    calculateMetrics();
-  } else {
-    costs[idx][field] = val;
-  }
+/* ── BOTTOM STATS ── */
+.bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+
+/* ── VENDOR TABLE ── */
+.star { color: var(--amber); font-size: 12px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  background: var(--navy); color: #fff; font-size: 12px;
+  padding: 10px 18px; border-radius: var(--radius-sm);
+  opacity: 0; transform: translateY(8px); transition: all 0.25s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+/* ── ALERT CARD ── */
+.alert-card {
+  background: #fff1f1; border: 1px solid #fca5a5; border-radius: var(--radius);
+  padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px;
+}
+.alert-card .icon { font-size: 20px; color: var(--red); }
+.alert-card .content { flex: 1; }
+.alert-card .title { font-size: 12px; font-weight: 700; color: var(--red); margin-bottom: 2px; }
+.alert-card .desc { font-size: 11px; color: #7f1d1d; }
+
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .charts-row { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main { padding: 16px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+  .bottom-row { grid-template-columns: 1fr; }
 }
 
-// 테이블 그리기 엔진 (6, 7번 수정형 입력칸 완전 적용)
-function renderTasks() {
-  const tbody = document.getElementById('taskTableBody');
-  tbody.innerHTML = '';
-  tasks.forEach((t, i) => {
-    tbody.innerHTML += `
-      <tr>
-        <td><input type="text" class="input-table" value="${t.loc}" onchange="bindTaskInput(${i}, 'loc', this.value)"></td>
-        <td><input type="text" class="input-table" value="${t.detail}" onchange="bindTaskInput(${i}, 'detail', this.value)"></td>
-        <td>
-          <select class="select-table" onchange="updateTaskStatus(${i}, this)">
-            <option value="진행중" ${t.status === '진행중' ? 'selected' : ''}>진행중</option>
-            <option value="조치완료" ${t.status === '조치완료' ? 'selected' : ''}>조치완료</option>
-          </select>
-        </td>
-        <td><input type="text" class="input-table" value="${t.vendor}" onchange="bindTaskInput(${i}, 'vendor', this.value)"></td>
-        <td><input type="text" class="input-table" value="${t.compDate}" style="color: ${t.compDate === '미완료' ? 'var(--danger)' : 'var(--success)'; font-weight:bold;}" readonly></td>
-        <td style="text-align:center;"><button class="btn btn-danger" onclick="deleteRow('task', ${i})">삭제</button></td>
-      </tr>`;
-  });
+/* ── LOGIN SCREEN ── */
+.login-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
+  display: flex; align-items: center; justify-content: center;
 }
-
-function renderLegals() {
-  const tbody = document.getElementById('legalTableBody');
-  tbody.innerHTML = '';
-  legals.forEach((l, i) => {
-    tbody.innerHTML += `
-      <tr>
-        <td><input type="text" class="input-table" value="${l.id}" onchange="bindLegalInput(${i}, 'id', this.value)"></td>
-        <td><input type="text" class="input-table" value="${l.name}" onchange="bindLegalInput(${i}, 'name', this.value)"></td>
-        <td>
-          <select class="select-table" onchange="updateLegalStatus(${i}, this)">
-            <option value="점검예정" ${l.status === '점검예정' ? 'selected' : ''}>점검 예정</option>
-            <option value="수검완료" ${l.status === '수검완료' ? 'selected' : ''}>수검완료</option>
-          </select>
-        </td>
-        <td><input type="date" class="input-table" value="${l.nextDate}" onchange="bindLegalInput(${i}, 'nextDate', this.value)"></td>
-        <td><input type="text" class="input-table" value="${l.compDate}" style="color: ${l.compDate === '미완료' ? 'var(--danger)' : 'var(--success)'; font-weight:bold;}" readonly></td>
-        <td style="text-align:center;"><button class="btn btn-danger" onclick="deleteRow('legal', ${i})">삭제</button></td>
-      </tr>`;
-  });
+.login-screen.hide { display: none; }
+.login-box {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 48px 40px; width: 400px; max-width: 90vw;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.4);
 }
-
-function renderCosts() {
-  const tbody = document.getElementById('costTableBody');
-  tbody.innerHTML = '';
-  costs.forEach((c, i) => {
-    let saveAmt = c.orig - c.final;
-    tbody.innerHTML += `
-      <tr>
-        <td><input type="text" class="input-table" value="${c.name}" onchange="bindCostInput(${i}, 'name', this.value)"></td>
-        <td><input type="text" class="input-table" value="${c.dept || ''}" onchange="bindCostInput(${i}, 'dept', this.value)"></td>
-        <td><input type="text" class="input-table" value="${c.orig}" onchange="bindCostInput(${i}, 'orig', this.value)"></td>
-        <td><input type="text" class="input-table" value="${c.final}" onchange="bindCostInput(${i}, 'final', this.value)"></td>
-        <td style="font-weight:700; color:var(--success)">▼ ${saveAmt.toLocaleString()}원</td>
-        <td><input type="text" class="input-table" value="${c.note}" onchange="bindCostInput(${i}, 'note', this.value)"></td>
-        <td style="text-align:center;"><button class="btn btn-danger" onclick="deleteRow('cost', ${i})">삭제</button></td>
-      </tr>`;
-  });
-}
-
-function openAddTaskRow() { tasks.push({ loc: '', detail: '', status: '진행중', vendor: '', compDate: '미완료' }); renderTasks(); }
-function openAddLegalRow() { legals.push({ id: '', name: '', status: '점검예정', nextDate: '', compDate: '미완료' }); renderLegals(); }
-function openAddCostRow() { costs.push({ name: '', dept: '', orig: 0, final: 0, note: '' }); renderCosts(); }
-
-function deleteRow(type, idx) {
-  if (type === 'task') { tasks.splice(idx, 1); renderTasks(); }
-  else if (type === 'legal') { legals.splice(idx, 1); renderLegals(); }
-  else { costs.splice(idx, 1); renderCosts(); }
-  calculateMetrics();
-}
-
-// 상단 메트릭 요약카드 수치 실시간 계산 함수
-function calculateMetrics() {
-  const completedTasks = tasks.filter(t => t.status === '조치완료').length;
-  const taskRate = tasks.length ? Math.round((completedTasks / tasks.length) * 100) : 0;
-  document.getElementById('rpt-rate').textContent = taskRate + '%';
-  
-  const totalSaved = costs.reduce((acc, c) => acc + (c.orig - c.final), 0);
-  document.getElementById('rpt-save').textContent = totalSaved.toLocaleString() + '원';
-}
-
-// 7. 준서님이 적은 테이블 실제 데이터 수치와 실시간으로 완벽 매핑 작동되는 그래프 빌더
-function renderCharts() {
-  if (charts.task) charts.task.destroy();
-  if (charts.cost) charts.cost.destroy();
-  if (charts.pie) charts.pie.destroy();
-
-  // 1) 월별 보수 완료 추이 그래프 연동
-  const currentCompleted = tasks.filter(t => t.status === '조치완료').length;
-  charts.task = new Chart(document.getElementById('taskTrendChart'), {
-    type: 'line',
-    data: {
-      labels: ['3월 실적', '4월 실적', '5월 현재 대장데이터 수치'],
-      datasets: [{ data: [3, 5, currentCompleted], borderColor: '#2563eb', borderWidth: 2, tension: 0.1, fill: false }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-  });
-
-  // 2) 비용대장 내역명 기반 실시간 절감 실적(SAVE) 자동 연동 그래프
-  const costLabels = costs.map(c => c.name || '미입력 공사');
-  const costSaves = costs.map(c => c.orig - c.final);
-  charts.cost = new Chart(document.getElementById('costSaveChart'), {
-    type: 'bar',
-    data: {
-      labels: costLabels,
-      datasets: [{ data: costSaves, backgroundColor: '#10b981', borderRadius: 6 }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-  });
-
-  // 3) 대장 등록 비율 실시간 도넛 파이 차트 연동
-  charts.pie = new Chart(document.getElementById('workTypePieChart'), {
-    type: 'pie',
-    data: {
-      labels: ['일반 민원/보수 건수', '법정 의무 검사 건수', '비용 관리 등록건수'],
-      datasets: [{ data: [tasks.length, legals.length, costs.length], backgroundColor: ['#2563eb', '#f59e0b', '#10b981'] }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-  });
-}
-
-// 오리지널 파일 내장 CSV 엑셀 내보내기 다운로드 코드 보존
-function downloadExcel(type) {
-  let csvData = '\ufeff';
-  if (type === 'task') {
-    csvData += '대상 위치/설비,보수 조치 내용,작업 상태,협력업체,완료 처리일\n';
-    tasks.forEach(t => csvData += `"${t.loc}","${t.detail}","${t.status}","${t.vendor}","${t.compDate}"\n`);
-  } else if (type === 'legal') {
-    csvData += '관리 번호,법정 의무 검사 종류,검사 상태,차기 예정일,완료 처리일\n';
-    legals.forEach(l => csvData += `"${l.id}","${l.name}","${l.status}","${l.nextDate}","${l.compDate}"\n`);
-  } else {
-    csvData += '공사 및 도입 자산명,요청 부서,기존 견적가,최종 실행가,절감 실적,비고\n';
-    costs.forEach(c => csvData += `"${c.name}","${c.dept}",${c.orig},${c.final},${c.orig-c.final},"${c.note}"\n`);
-  }
-  const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.setAttribute('download', `${type}_대장_출력.csv`);
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-window.onload = function() {
-  renderTasks();
-  renderLegals();
-  renderCosts();
-  calculateMetrics();
-  renderCharts();
-};
-</script>
-</body>
-</html>
+.login-logo { text-align: center; margin-bottom: 36px; }
+.login-logo .icon { font-size: 48px; margin-bottom: 16px; }
+.login-logo .co { font-size: 26
