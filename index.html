@@ -8,27 +8,31 @@
 <meta name="apple-mobile-web-app-title" content="드림솔 시설관리">
 <meta name="theme-color" content="#0f1c3f">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230f1c3f' width='100' height='100'/><text y='70' x='50' text-anchor='middle' font-size='60' fill='%23fff'>🏢</text></svg>">
-<title>드림솔 시설관리 통합 대시보드</title>
+<title>드림솔 시설관리 통합 대시보드 v2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   :root {
-    --bg-main: #f1f5f9;
+    --bg-main: #f8fafc;
     --sidebar-bg: #0f1c3f;
     --card-bg: #ffffff;
-    --text-primary: #1e293b;
+    --text-primary: #0f172a;
     --text-muted: #64748b;
     --border-color: #e2e8f0;
     --primary: #2563eb;
+    --primary-light: #eff6ff;
     --success: #10b981;
+    --success-light: #ecfdf5;
     --danger: #ef4444;
+    --danger-light: #fef2f2;
     --warning: #f59e0b;
+    --warning-light: #fffbeb;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; -webkit-tap-highlight-color: transparent; }
-  body { background-color: var(--bg-main); color: var(--text-primary); display: flex; min-height: 100vh; overflow: hidden; font-size: 14px; }
+  body { background-color: var(--bg-main); color: var(--text-primary); display: flex; min-height: 100vh; overflow: hidden; font-size: 13px; }
   
-  /* 🔐 로그인 레이어 스타일 */
+  /* 🔐 로그인 전체 오버레이 레이아웃 */
   .login-container {
     position: fixed;
     top: 0;
@@ -50,4 +54,553 @@
     border-radius: 16px;
     width: 100%;
     max-width: 400px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+  .login-box .logo { font-size: 24px; font-weight: 700; color: #0f1c3f; margin-bottom: 6px; }
+  .login-box .logo span { color: var(--success); }
+  .login-box .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+  .login-group { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+  .login-input { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  .login-input:focus { border-color: var(--primary); }
+  .login-btn { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 6px; transition: background 0.2s; }
+  .login-btn:hover { background: #1d4ed8; }
+  .login-error-msg { color: var(--danger); font-size: 12px; margin-top: 12px; display: none; font-weight: 500; }
+
+  /* 사이드바 및 레이아웃 컴포넌트 */
+  .sidebar { width: 240px; background-color: var(--sidebar-bg); color: #fff; padding: 24px; display: flex; flex-direction: column; gap: 32px; flex-shrink: 0; box-shadow: 2px 0 8px rgba(0,0,0,0.05); }
+  .sidebar .logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; padding: 0 4px; }
+  .sidebar .logo span { color: var(--success); }
+  .sidebar nav ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .sidebar nav li { padding: 12px 14px; border-radius: 8px; color: #94a3b8; cursor: pointer; transition: all 0.15s; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+  .sidebar nav li.active { background-color: rgba(255,255,255,0.1); color: #fff; font-weight: 700; }
+  .sidebar nav li:hover:not(.active) { background-color: rgba(255,255,255,0.05); color: #f1f5f9; }
+  
+  .main-content { flex-grow: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; height: 100vh; }
+  .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px; }
+  .header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .header .meta { font-size: 12px; color: var(--text-muted); }
+  
+  .view-panel { display: none; flex-direction: column; gap: 20px; }
+  .view-panel.active { display: flex; }
+  
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .metric-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+  .metric-card .label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .metric-card .value { font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  
+  .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .chart-panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 14px; height: 280px; }
+  .chart-panel-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center; }
+  .chart-wrapper { position: relative; flex-grow: 1; width: 100%; height: 100%; }
+  
+  .content-panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+  .panel-header { display: flex; justify-content: space-between; align-items: center; }
+  .panel-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  
+  .table-container { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; }
+  .table-core { width: 100%; border-collapse: collapse; text-align: left; }
+  .table-core th { background-color: #f8fafc; padding: 10px 14px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border-color); font-size: 12px; }
+  .table-core td { padding: 8px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  
+  .input-table { width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; outline: none; transition: border 0.15s; background: #fff; }
+  .input-table:focus { border-color: var(--primary); }
+  .select-table { width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; outline: none; background-color: #fff; }
+  
+  .btn { padding: 8px 12px; border-radius: 6px; border: none; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: background 0.15s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover { background: #059669; }
+  .btn-danger { background: var(--danger-light); color: var(--danger); font-size: 11px; padding: 4px 8px; border-radius: 4px; }
+  .btn-danger:hover { background: var(--danger); color: #fff; }
+  
+  .badge { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 500; display: inline-block; }
+  .badge-danger { background: var(--danger-light); color: var(--danger); }
+  .badge-warning { background: var(--warning-light); color: var(--warning); }
+  .badge-success { background: var(--success-light); color: var(--success); }
+  .badge-primary { background: var(--primary-light); color: var(--primary); }
+</style>
+</head>
+<body>
+
+<div id="loginOverlay" class="login-container">
+  <div class="login-box">
+    <div class="logo">🏢 드림솔 <span>FM</span></div>
+    <div class="subtitle">통합 프로세스 관리 시스템 v2</div>
+    <div class="login-group">
+      <input type="text" id="userId" class="login-input" placeholder="사원번호 또는 아이디" autocomplete="off">
+      <input type="password" id="userPw" class="login-input" placeholder="비밀번호" onkeyup="if(window.event.keyCode==13){handleLogin()}">
+      <button class="login-btn" onclick="handleLogin()">시스템 접속</button>
+    </div>
+    <div id="loginError" class="login-error-msg">계정 정보가 올바르지 않습니다. 다시 확인해주세요.</div>
+  </div>
+</div>
+
+<div class="sidebar">
+  <div class="logo">🏢 드림솔 <span>FM</span></div>
+  <nav>
+    <ul>
+      <li class="active" onclick="switchView('dashboard')">📊 통합 대시보드</li>
+      <li onclick="switchView('tasks')">🛠️ 현장 운영 관리</li>
+      <li onclick="switchView('legal')">⚖️ 법정검사 대장</li>
+      <li onclick="switchView('costs')">💵 비용/성과 관리</li>
+      <li onclick="switchView('energy')">⚡ 에너지 관리</li>
+    </ul>
+  </nav>
+</div>
+
+<div class="main-content">
+  <div class="header">
+    <h1 id="page-title">통합 프로세스 관리 대시보드</h1>
+    <div class="meta">기준일시: 2026-05-20 | 담당자: 준서 대리</div>
+  </div>
+
+  <div id="view-dashboard" class="view-panel active">
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <span class="label">업무 완료율</span>
+        <span class="value" id="rpt-rate" style="color: var(--primary);">0%</span>
+      </div>
+      <div class="metric-card">
+        <span class="label">누적 비용 절감</span>
+        <span class="value" id="rpt-save" style="color: var(--success);">0원</span>
+      </div>
+      <div class="metric-card">
+        <span class="label">법정점검 준수율</span>
+        <span class="value" id="rpt-compliance" style="color: var(--warning);">100%</span>
+      </div>
+      <div class="metric-card">
+        <span class="label">설비 가동률</span>
+        <span class="value" id="rpt-uptime" style="color: #8b5cf6;">99.4%</span>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="chart-panel">
+        <div class="chart-panel-title">📈 월별 주요 시설 민원 처리 추이</div>
+        <div class="chart-wrapper"><canvas id="chart-tasks"></canvas></div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-panel-title">💰 내역별 비용 절감 실적 (SAVE)</div>
+        <div class="chart-wrapper"><canvas id="chart-costs"></canvas></div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-panel-title">📊 업무 유형별 분포</div>
+        <div class="chart-wrapper"><canvas id="chart-pie"></canvas></div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-panel-title">⚡ 전력 및 용수 사용량 추이</div>
+        <div class="chart-wrapper"><canvas id="chart-energy"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-tasks" class="view-panel">
+    <div class="content-panel">
+      <div class="panel-header">
+        <span class="panel-title">🛠️ 현장 일반 민원 및 보수 현황대장</span>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-primary" onclick="addRow('task')">+ 신규 조치 등록</button>
+          <button class="btn btn-success" onclick="downloadExcel('task')">Excel 내보내기</button>
+        </div>
+      </div>
+      <div class="table-container">
+        <table class="table-core">
+          <thead>
+            <tr>
+              <th>구분</th><th>보수 조치 내용</th><th>위치</th><th>협력업체</th><th>상태</th><th style="width:50px; text-align:center;">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-tasks"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-legal" class="view-panel">
+    <div class="content-panel">
+      <div class="panel-header">
+        <span class="panel-title">⚖️ 법정 의무 주기 검사 관리 대장</span>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-primary" onclick="addRow('legal')">+ 신규 검사 등록</button>
+          <button class="btn btn-success" onclick="downloadExcel('legal')">Excel 내보내기</button>
+        </div>
+      </div>
+      <div class="table-container">
+        <table class="table-core">
+          <thead>
+            <tr>
+              <th>검사 종류</th><th>관련 법령</th><th>검사 주기</th><th>최근검사일</th><th>차기예정일</th><th>기관</th><th>상태</th><th style="width:50px; text-align:center;">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-legal"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-costs" class="view-panel">
+    <div class="content-panel">
+      <div class="panel-header">
+        <span class="panel-title">💵 공사 및 주요 자산 도입 비용절감 대장</span>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-primary" onclick="addRow('cost')">+ 신규 내역 등록</button>
+          <button class="btn btn-success" onclick="downloadExcel('report')">📋 성과리포트 출력</button>
+          <button class="btn btn-success" onclick="downloadExcel('cost')">Excel 내보내기</button>
+        </div>
+      </div>
+      <div class="table-container">
+        <table class="table-core">
+          <thead>
+            <tr>
+              <th>공사/도입 건명</th><th>최초 견적가</th><th>최종 실행가</th><th>절감액 (SAVE)</th><th>비고 (절감 사유)</th><th style="width:50px; text-align:center;">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-costs"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-energy" class="view-panel">
+    <div class="content-panel">
+      <div class="panel-header">
+        <span class="panel-title">⚡ 월별 에너지 사용량 및 비용 분석</span>
+        <button class="btn btn-success" onclick="downloadExcel('energy')">Excel 내보내기</button>
+      </div>
+      <div class="table-container">
+        <table class="table-core">
+          <thead>
+            <tr>
+              <th>해당월</th><th>전력 사용량 (kWh)</th><th>전력 요금 (원)</th><th>용수 사용량 (톤)</th><th>용수 요금 (원)</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-energy"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 내부 축약형 DOM 선택기 정의
+const $ = id => document.getElementById(id);
+
+// ⚡ v2 최신 고도화 데이터셋 완벽 결합
+let tasks = [
+  { type: '기계', detail: '5층 주방 싱크대 배수관 역류 통수작업', loc: '본관 5층', vendor: '삼형기계', status: '완료' },
+  { type: '전기', detail: '지하주차장 노후 안정기 및 LED 3개소 교체', loc: '지하주차장', vendor: '자체수선', status: '완료' },
+  { type: '영선', detail: '1층 로비 출입문 힌지 조정 및 고정작업', loc: '로비', vendor: '자체수선', status: '진행중' },
+  { type: '소방', detail: 'A동 감지기 오작동 회로 점검 및 교체', loc: 'A동 전층', vendor: '신성소방', status: '완료' }
+];
+
+let legals = [
+  { name: '승강기 정기 안전검사', law: '승강기안전관리법', cycle: '1년', last: '2025-11-22', next: '2026-11-21', agency: '안전관리공단', status: '정상' },
+  { name: '소방시설 외관점검', law: '소방시설법', cycle: '1월', last: '2026-05-10', next: '2026-06-09', agency: '자체선임자', status: '정상' },
+  { name: '저수조 수질검사', law: '수도법', cycle: '6월', last: '2026-01-15', next: '2026-07-14', agency: '맑은물분석원', status: '정상' },
+  { name: '고압가스 정기검사', law: '고압가스안전관리법', cycle: '1년', last: '2025-09-12', next: '2026-09-11', agency: '가스안전공사', status: '기간임박' }
+];
+
+let costs = [
+  { name: '옥상 방수 부분 보수 공사', orig: 4500000, final: 3800000, note: '업체 네고 및 시방 규격 최적화' },
+  { name: '지하주차장 LED 전면 교체 사업', orig: 12000000, final: 9500000, note: '정부 보조금 수급 및 자체 인력 시공' },
+  { name: '보일러 세관 및 소모품 교체', orig: 3200000, final: 3200000, note: '순정 부품 적용 (절감 없음)' }
+];
+
+let energyData = [
+  { month: '1월', elec: 45000, elecAmt: 5400000, water: 320, waterAmt: 640000 },
+  { month: '2월', elec: 42000, elecAmt: 5040000, water: 310, waterAmt: 620000 },
+  { month: '3월', elec: 38000, elecAmt: 4560000, water: 290, waterAmt: 580000 },
+  { month: '4월', elec: 39000, elecAmt: 4680000, water: 340, waterAmt: 680000 },
+  { month: '5월', elec: 41000, elecAmt: 4920000, water: 350, waterAmt: 700000 }
+];
+
+let charts = {};
+
+// 🔐 로그인 상태 및 제어 로직 (완벽 검증본)
+function handleLogin() {
+  const id = $('userId').value.trim();
+  const pw = $('userPw').value.trim();
+  const errorEl = $('loginError');
+
+  if (id === 'admin' && pw === '1234') {
+    errorEl.style.display = 'none';
+    sessionStorage.setItem('isLoggedIn', 'true');
+    
+    const overlay = $('loginOverlay');
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.style.visibility = 'hidden';
+      overlay.style.display = 'none';
+    }, 300);
+
+    // 에러 발생 소지 차단 후 시스템 마운트 실행
+    initSystem();
+  } else {
+    errorEl.style.display = 'block';
+    $('userPw').value = '';
+    $('userPw').focus();
+  }
+}
+
+function switchView(viewName) {
+  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar nav li').forEach(l => l.classList.remove('active'));
+  
+  $('view-' + viewName).classList.add('active');
+  const eventTarget = [...document.querySelectorAll('.sidebar nav li')].find(l => {
+    if (viewName === 'dashboard') return l.textContent.includes('통합 대시보드');
+    if (viewName === 'tasks') return l.textContent.includes('현장 운영 관리');
+    if (viewName === 'legal') return l.textContent.includes('법정검사 대장');
+    if (viewName === 'costs') return l.textContent.includes('비용/성과 관리');
+    return l.textContent.includes('에너지 관리');
+  });
+  if (eventTarget) eventTarget.classList.add('active');
+  
+  if (viewName === 'dashboard') {
+    calculateMetrics();
+    renderCharts();
+  }
+}
+
+function renderTasks() {
+  const tbody = $('tbl-tasks'); if(!tbody) return;
+  tbody.innerHTML = '';
+  tasks.forEach((t, i) => {
+    tbody.innerHTML += `
+      <tr>
+        <td><input type="text" class="input-table" value="${t.type}" onchange="tasks(${i}).type=this.value"></td>
+        <td><input type="text" class="input-table" value="${t.detail}" onchange="tasks(${i}).detail=this.value"></td>
+        <td><input type="text" class="input-table" value="${t.loc}" onchange="tasks(${i}).loc=this.value"></td>
+        <td><input type="text" class="input-table" value="${t.vendor}" onchange="tasks(${i}).vendor=this.value"></td>
+        <td>
+          <select class="select-table" onchange="tasks[${i}].status=this.value; calculateMetrics();">
+            <option value="진행중" ${t.status==='진행중'?'selected':''}>진행중</option>
+            <option value="완료" ${t.status==='완료'?'selected':''}>완료</option>
+          </select>
+        </td>
+        <td style="text-align:center;"><button class="btn btn-danger" onclick="deleteRow('task', ${i})">삭제</button></td>
+      </tr>`;
+  });
+}
+
+function renderLegals() {
+  const tbody = $('tbl-legal'); if(!tbody) return;
+  tbody.innerHTML = '';
+  legals.forEach((l, i) => {
+    tbody.innerHTML += `
+      <tr>
+        <td><input type="text" class="input-table" value="${l.name}" onchange="legals[${i}].name=this.value"></td>
+        <td><input type="text" class="input-table" value="${l.law}" onchange="legals[${i}].law=this.value"></td>
+        <td><input type="text" class="input-table" value="${l.cycle}" onchange="legals[${i}].cycle=this.value"></td>
+        <td><input type="date" class="input-table" value="${l.last}" onchange="legals[${i}].last=this.value"></td>
+        <td><input type="date" class="input-table" value="${l.next}" onchange="legals[${i}].next=this.value"></td>
+        <td><input type="text" class="input-table" value="${l.agency}" onchange="legals[${i}].agency=this.value"></td>
+        <td>
+          <select class="select-table" onchange="legals[${i}].status=this.value; calculateMetrics();">
+            <option value="정상" ${l.status==='정상'?'selected':''}>정상</option>
+            <option value="기간임박" ${l.status==='기간임박'?'selected':''}>기간임박</option>
+            <option value="지연" ${l.status==='지연'?'selected':''}>지연</option>
+          </select>
+        </td>
+        <td style="text-align:center;"><button class="btn btn-danger" onclick="deleteRow('legal', ${i})">삭제</button></td>
+      </tr>`;
+  });
+}
+
+function renderCosts() {
+  const tbody = $('tbl-costs'); if(!tbody) return;
+  tbody.innerHTML = '';
+  costs.forEach((c, i) => {
+    let saveAmt = c.orig - c.final;
+    tbody.innerHTML += `
+      <tr>
+        <td><input type="text" class="input-table" value="${c.name}" onchange="costs[${i}].name=this.value"></td>
+        <td><input type="number" class="input-table" value="${c.orig}" onchange="costs[${i}].orig=Number(this.value); renderCosts(); calculateMetrics();"></td>
+        <td><input type="number" class="input-table" value="${c.final}" onchange="costs[${i}].final=Number(this.value); renderCosts(); calculateMetrics();"></td>
+        <td style="font-weight:700; color:var(--success)">${saveAmt.toLocaleString()}원</td>
+        <td><input type="text" class="input-table" value="${c.note}" onchange="costs[${i}].note=this.value"></td>
+        <td style="text-align:center;"><button class="btn btn-danger" onclick="deleteRow('cost', ${i})">삭제</button></td>
+      </tr>`;
+  });
+}
+
+function renderEnergy() {
+  const tbody = $('tbl-energy'); if(!tbody) return;
+  tbody.innerHTML = '';
+  energyData.forEach((e) => {
+    tbody.innerHTML += `
+      <tr>
+        <td style="font-weight:600;">${e.month}</td>
+        <td>${e.elec.toLocaleString()}</td>
+        <td>${e.elecAmt.toLocaleString()}원</td>
+        <td>${e.water.toLocaleString()}</td>
+        <td>${e.waterAmt.toLocaleString()}원</td>
+      </tr>`;
+  });
+}
+
+function addRow(type) {
+  if (type === 'task') tasks.push({ type: '일반', detail: '', loc: '', vendor: '', status: '진행중' }), renderTasks();
+  else if (type === 'legal') legals.push({ name: '', law: '', cycle: '', last: '', next: '', agency: '', status: '정상' }), renderLegals();
+  else if (type === 'cost') costs.push({ name: '', orig: 0, final: 0, note: '' }), renderCosts();
+  calculateMetrics();
+}
+
+function deleteRow(type, idx) {
+  if (type === 'task') tasks.splice(idx, 1), renderTasks();
+  else if (type === 'legal') legals.splice(idx, 1), renderLegals();
+  else if (type === 'cost') costs.splice(idx, 1), renderCosts();
+  calculateMetrics();
+}
+
+function calculateMetrics() {
+  const completed = tasks.filter(t => t.status === '완료').length;
+  $('rpt-rate').textContent = tasks.length ? Math.round((completed / tasks.length) * 100) + '%' : '0%';
+  
+  const totalSaved = costs.reduce((acc, c) => acc + (c.orig - c.final), 0);
+  $('rpt-save').textContent = totalSaved.toLocaleString() + '원';
+  
+  const compliance = legals.filter(l => l.status !== '지연').length;
+  $('rpt-compliance').textContent = legals.length ? Math.round((compliance / legals.length) * 100) + '%' : '100%';
+}
+
+function renderCharts() {
+  if (charts.task) charts.task.destroy();
+  if (charts.cost) charts.cost.destroy();
+  if (charts.pie) charts.pie.destroy();
+  if (charts.energy) charts.energy.destroy();
+
+  // 1. 민원 처리 추이 차트
+  charts.task = new Chart($('chart-tasks'), {
+    type: 'line',
+    data: {
+      labels: ['3월', '4월', '5월 당월'],
+      datasets: [
+        { label: '접수', data: [12, 18, tasks.length], borderColor: '#64748b', tension: 0.2 },
+        { label: '완료', data: [10, 15, tasks.filter(t=>t.status==='완료').length], borderColor: '#2563eb', tension: 0.2 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // 2. 비용 절감 바 차트
+  charts.cost = new Chart($('chart-costs'), {
+    type: 'bar',
+    data: {
+      labels: costs.map(c => c.name.substring(0,6) + '..'),
+      datasets: [{ label: '절감액 (SAVE)', data: costs.map(c => c.orig - c.final), backgroundColor: '#10b981' }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // 3. 업무 분포 비율 파이 차트
+  charts.pie = new Chart($('chart-pie'), {
+    type: 'pie',
+    data: {
+      labels: ['현장 업무', '법정 검사', '비용 자산'],
+      datasets: [{ data: [tasks.length, legals.length, costs.length], backgroundColor: ['#2563eb', '#f59e0b', '#10b981'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+  });
+
+  // 4. 에너지 사용량 혼합 차트
+  charts.energy = new Chart($('chart-energy'), {
+    type: 'bar',
+    data: {
+      labels: energyData.map(e => e.month),
+      datasets: [
+        { type: 'bar', label: '전력량(kWh)', data: energyData.map(e => e.elec), backgroundColor: '#3b82f6', yAxisID: 'y' },
+        { type: 'line', label: '용수량(톤)', data: energyData.map(e => e.water), borderColor: '#06b6d4', yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { type: 'linear', position: 'left' },
+        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+}
+
+function downloadExcel(type) {
+  let data = [];
+  let filename = '대장출력';
+  
+  switch(type) {
+    case 'task':
+      data = [['구분', '보수 조치 내용', '위치', '협력업체', '상태']];
+      tasks.forEach(t => data.push([t.type, t.detail, t.loc, t.vendor, t.status]));
+      filename = '현장운영관리';
+      break;
+    case 'legal':
+      data = [['검사 종류', '관련 법령', '검사 주기', '최근검사일', '차기예정일', '기관', '상태']];
+      legals.forEach(l => data.push([l.name, l.law, l.cycle, l.last, l.next, l.agency, l.status]));
+      filename = '법정검사대장';
+      break;
+    case 'cost':
+      data = [['공사/도입 건명', '최초 견적가', '최종 실행가', '절감액', '비고']];
+      costs.forEach(c => data.push([c.name, c.orig, c.final, c.orig - c.final, c.note]));
+      filename = '비용절감대장';
+      break;
+    case 'energy':
+      data = [['해당월', '전력 사용량(kWh)', '전력 요금(원)', '용수 사용량(톤)', '용수 요금(원)']];
+      energyData.forEach(e => data.push([e.month, e.elec, e.elecAmt, e.water, e.waterAmt]));
+      filename = '에너지현황';
+      break;
+    case 'report':
+      const now = new Date();
+      data = [
+        ['드림솔 시설관리 월간 성과 요약'],
+        ['보고기간', now.getFullYear() + '년 ' + (now.getMonth()+1) + '월'],
+        ['담당자', '준서'],
+        ['보고일', now.getFullYear() + '.' + (now.getMonth()+1) + '.' + now.getDate()],
+        [],
+        ['핵심 성과 지표'],
+        ['업무 완료율', $('rpt-rate').textContent],
+        ['누적 비용 절감', $('rpt-save').textContent],
+        ['법정점검 준수율', $('rpt-compliance').textContent],
+        ['설비 가동률', $('rpt-uptime').textContent]
+      ];
+      filename = '성과리포트';
+      break;
+  }
+  
+  let csvContent = '\ufeff';
+  data.forEach(row => {
+    csvContent += row.map(val => `"${val.toString().replace(/"/g, '""')}"`).join(',') + '\n';
+  });
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.setAttribute('download', `${filename}_${new Date().toISOString().substring(0,10)}.csv`);
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function initSystem() {
+  renderTasks();
+  renderLegals();
+  renderCosts();
+  renderEnergy();
+  calculateMetrics();
+  renderCharts();
+}
+
+window.onload = function() {
+  if (sessionStorage.getItem('isLoggedIn') === 'true') {
+    $('loginOverlay').style.display = 'none';
+    $('loginOverlay').style.visibility = 'hidden';
+    initSystem();
+  } else {
+    $('userId').focus();
+  }
+};
+</script>
+</body>
+</html>
