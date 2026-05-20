@@ -154,29 +154,42 @@ body {
 .kpi-trend { font-size: 10px; font-weight: 500; }
 .up { color: var(--green); } .down { color: var(--red); } .neu { color: var(--text3); }
 
-/* ── DDAY ── */
-.dday-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 28px; }
-.dday-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; cursor: pointer; transition: box-shadow 0.15s; }
-.dday-card:hover { box-shadow: 0 2px 12px rgba(15,28,63,0.08); }
-.dday-card .dd-name { font-size: 10px; color: var(--text3); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dday-card .dd-num { font-family: var(--mono); font-size: 20px; font-weight: 700; }
-.dday-card .dd-date { font-size: 10px; color: var(--text3); margin-top: 3px; }
-.dday-safe .dd-num { color: var(--text2); }
-.dday-warn { background: #fffbea; border-color: #f5c842; }
-.dday-warn .dd-num { color: #92650a; }
-.dday-urgent { background: #fff1f1; border-color: #fca5a5; }
-.dday-urgent .dd-num { color: var(--red); animation: blink 1s step-end infinite; }
-.dday-over { background: #1a1a2e; border-color: #7f1d1d; }
-.dday-over .dd-num { color: #fc8181; }
-.dday-over .dd-name, .dday-over .dd-date { color: #6b7280; }
-.dday-completed { background: #ecfdf5; border-color: var(--green); }
-.dday-completed .dd-num { color: var(--green); text-decoration: line-through; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+/* ── DDAY (수정됨: 요청하신 깔끔한 이미지 형태) ── */
+.dday-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 28px; }
+.dday-card { 
+  background: var(--surface); 
+  border: 1px solid var(--border); 
+  border-radius: var(--radius-sm); 
+  padding: 12px 14px; 
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer; 
+  transition: transform 0.15s, box-shadow 0.15s; 
+}
+.dday-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.dday-card .dd-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.dday-card .dd-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dday-card .dd-badge { 
+  font-family: var(--mono); 
+  font-size: 10px; 
+  font-weight: 700; 
+  padding: 2px 6px; 
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+/* 가까운 디데이 상태별 컬러 구성 */
+.dday-card.status-urgent .dd-badge { background: #fee2e2; color: #ef4444; }
+.dday-card.status-warn .dd-badge { background: #fef3c7; color: #d97706; }
+
+.dday-card .dd-date { font-family: var(--mono); font-size: 11px; color: var(--text3); }
 
 .dday-add-btn {
   background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius-sm);
   padding: 12px 14px; display: flex; align-items: center; justify-content: center; gap: 6px;
-  font-size: 11px; color: var(--text3); cursor: pointer; transition: all 0.15s;
+  font-size: 11px; color: var(--text3); cursor: pointer; transition: all 0.15s; min-height: 62px;
 }
 .dday-add-btn:hover { border-color: var(--accent); color: var(--accent); }
 
@@ -498,31 +511,25 @@ tr:hover td { background: var(--surface2); }
 <div class="toast" id="toast"></div>
 
 <script>
-/* ══════════════════════════════════════ LOGIN LOGIC (FIXED) ══════════════════════════════════════ */
+/* ══════════════════════════════════════ LOGIN LOGIC ══════════════════════════════════════ */
 function handleLogin() {
   const id = document.getElementById('login-id').value.trim();
   const pw = document.getElementById('login-pw').value.trim();
-
   if(!id || !pw) {
     document.getElementById('login-err').style.display = 'block';
-    document.getElementById('login-err').textContent = '아이디와 비밀번호를 입력해주세요.';
     return;
   }
-
-  // 프론트엔드 임시 로그인 세션 설정 (아무 값이나 쓰면 통과)
   sessionStorage.setItem('ds_is_logged_in', 'true');
   document.getElementById('login-screen').style.display = 'none';
   showToast('로그인에 성공했습니다.');
   renderDashboard();
 }
-
 function handleLogout() {
   sessionStorage.removeItem('ds_is_logged_in');
   document.getElementById('login-id').value = '';
   document.getElementById('login-pw').value = '';
   document.getElementById('login-screen').style.display = 'flex';
 }
-
 function checkSession() {
   if (sessionStorage.getItem('ds_is_logged_in') === 'true') {
     document.getElementById('login-screen').style.display = 'none';
@@ -545,8 +552,6 @@ let vendors = load(K.vendors);
 let consumables = load(K.consumables);
 let energy = load(K.energy);
 
-let taskFilter = 'all', taskFilter2 = 'all', showDone = false;
-
 // INITIAL DATA SEEDING
 if (!tasks.length) {
   tasks = [
@@ -561,7 +566,12 @@ if (!costs.length) {
   save(K.costs, costs);
 }
 if (!ddays.length) {
-  ddays = [{id:1, name:'소방시설 정기점검', date:'2026-05-25', completed:false}];
+  ddays = [
+    {id:1, name:'소방시설 정기점검', date:'2026-05-25', completed:false},
+    {id:2, name:'승강기 정기 자체점검', date:'2026-05-22', completed:false},
+    {id:3, name:'전기설비 정기검사', date:'2026-06-10', completed:false},
+    {id:4, name:'가스시설 정기검사', date:'2026-05-20', completed:true} // 완료된 데이터 시드 예시
+  ];
   save(K.ddays, ddays);
 }
 if (!vendors.length) {
@@ -588,14 +598,12 @@ document.querySelectorAll('.nav-item').forEach(item => {
 function navigateTo(page) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pageEl = $('page-'+page); if (pageEl) pageEl.classList.add('active');
-  if (page === 'dashboard') { renderDashboard(); updateDonut(); }
+  if (page === 'dashboard') renderDashboard();
   if (page === 'tasks') renderTasks2();
   if (page === 'dday') renderDdayTable();
   if (page === 'cost') renderCosts2();
   if (page === 'vendor') { renderVendors(); renderVendors2(); }
   if (page === 'consumable') renderConsumables();
-  if (page === 'report') renderReport();
-  if (page === 'energy') renderEnergyCharts();
 }
 
 function showModal(type) {
@@ -625,14 +633,38 @@ function renderKPIs() {
   $('kpi-todo').innerHTML = tasks.filter(t=>t.status === '미착수').length + '<span>건</span>';
 }
 
+/* ════════════════ 법정점검 렌더링 & 정렬 필터 로직 (핵심 수정) ════════════════ */
 function renderDday() {
   const container = $('dday-strip');
+  // 수동 등록 버튼 제외하고 기존에 동적으로 만들어진 카드들만 청소
   container.querySelectorAll('.dday-card').forEach(c=>c.remove());
-  ddays.forEach(d => {
-    const diff = diffDays(d.date);
-    const card = document.createElement('div'); card.className = 'dday-card dday-warn';
-    card.innerHTML = `<div class="dd-name">${d.name}</div><div class="dd-num">D-${diff}</div><div class="dd-date">${d.date}</div>`;
-    container.insertBefore(card, container.firstChild);
+
+  // 1. 완료된(completed: true) 항목은 제외하고 필터링
+  // 2. 디데이가 얼마 남지 않은 순(오름차순)으로 정렬
+  const activeDdays = ddays
+    .filter(d => !d.completed)
+    .map(d => ({ ...d, diff: diffDays(d.date) }))
+    .sort((a, b) => a.diff - b.diff);
+
+  activeDdays.forEach(d => {
+    const card = document.createElement('div');
+    
+    // 남은 일수에 따라 색상 분기용 클래스 부여 (3일 이내 urgent, 7일 이내 warn)
+    let statusClass = '';
+    if (d.diff <= 3) statusClass = 'status-urgent';
+    else if (d.diff <= 7) statusClass = 'status-warn';
+
+    card.className = `dday-card ${statusClass}`;
+    card.innerHTML = `
+      <div class="dd-top">
+        <div class="dd-name">${d.name}</div>
+        <div class="dd-badge">D-${d.diff < 0 ? 'Over' : d.diff}</div>
+      </div>
+      <div class="dd-date">${d.date}</div>
+    `;
+    
+    // 왼쪽에서부터 순서대로 노출되도록 '점검 추가' 버튼 바로 앞에 순차 삽입
+    container.insertBefore(card, container.lastElementChild);
   });
 }
 
@@ -704,16 +736,22 @@ function deleteVendor(id){ vendors=vendors.filter(v=>v.id!==id); save(K.vendors,
 function renderDdayTable() {
   const tb = $('dday-tbody'); tb.innerHTML = '';
   ddays.forEach(d => {
-    const tr = document.createElement('tr'); tr.innerHTML = `<td>${d.name}</td><td>${d.date}</td><td>D-${diffDays(d.date)}</td><td>${d.completed?'완료':'미완료'}</td><td><button onclick="toggleDday(${d.id})">변경</button></td><td><button onclick="deleteDday(${d.id})">삭제</button></td>`;
+    const tr = document.createElement('tr'); tr.innerHTML = `<td>${d.name}</td><td>${d.date}</td><td>D-${diffDays(d.date)}</td><td>${d.completed?'완료':'미완료'}</td><td><button onclick="toggleDday(${d.id})">상태 변경</button></td><td><button onclick="deleteDday(${d.id})">삭제</button></td>`;
     tb.appendChild(tr);
   });
 }
 function addDday() {
   ddays.push({id:Date.now(), name:$('d-name').value, date:$('d-date').value, completed:false});
-  save(K.ddays, ddays); hideModal('dday'); renderDdayTable();
+  save(K.ddays, ddays); hideModal('dday'); renderDdayTable(); renderDday();
 }
-function toggleDday(id){ const d=ddays.find(x=>x.id===id); if(d) d.completed=!d.completed; save(K.ddays,ddays); renderDdayTable(); }
-function deleteDday(id){ ddays=ddays.filter(d=>d.id!==id); save(K.ddays,ddays); renderDdayTable(); }
+function toggleDday(id){ 
+  const d=ddays.find(x=>x.id===id); 
+  if(d) d.completed=!d.completed; 
+  save(K.ddays,ddays); 
+  renderDdayTable();
+  renderDday(); // 상태 변경 시 대시보드 알림 리스트도 즉각 동기화되도록 반영
+}
+function deleteDday(id){ ddays=ddays.filter(d=>d.id!==id); save(K.ddays,ddays); renderDdayTable(); renderDday(); }
 
 function renderConsumables() {
   const tb = $('consumable-tbody'); tb.innerHTML = '';
@@ -733,21 +771,17 @@ function addConsumable() {
 }
 function deleteConsumable(id) { consumables=consumables.filter(c=>c.id!==id); save(K.consumables,consumables); renderConsumables(); }
 
-function renderEnergyCharts() {}
-function renderReport() {}
-
 function showToast(msg) {
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-function updateDonut() {}
 function filterTask() {}
 function toggleDone() {}
 function exportToExcel() {}
 
 window.addEventListener('DOMContentLoaded', () => {
-  checkSession(); // 페이지 로드 시 세션 확인
+  checkSession();
   renderDashboard();
 });
 </script>
