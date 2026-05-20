@@ -32,7 +32,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; -webkit-tap-highlight-color: transparent; }
   body { background-color: var(--bg-main); color: var(--text-primary); display: flex; min-height: 100vh; overflow: hidden; font-size: 13px; }
   
-  /* 🔐 로그인 레이어 스타일 추가 */
+  /* 🔐 로그인 레이어 스타일 */
   .login-container {
     position: fixed;
     top: 0; left: 0;
@@ -279,7 +279,7 @@
 <script>
 const $ = id => document.getElementById(id);
 
-// 📦 원본 데이터 보존
+// 📦 데이터셋 오리지널 유지
 let tasks = [
   { type: '기계', detail: '5층 주방 싱크대 배수관 역류 통수작업', loc: '본관 5층', vendor: '삼형기계', status: '완료' },
   { type: '전기', detail: '지하주차장 노후 안정기 및 LED 3개소 교체', loc: '지하주차장', vendor: '자체수선', status: '완료' },
@@ -310,10 +310,10 @@ let energyData = [
 
 let charts = {};
 
-// 🔐 단독 추가된 안전 로그인 핸들러 (엔터 및 클릭 연동)
+// 🔐 오타 전면 수정된 로그인 로직 (접속 정보 일치 시 완벽 구동)
 function handleLogin() {
   const id = $('userId').value.trim();
-  const pw = ...
+  const pw = $('userPw').value.trim();
   const errorEl = $('loginError');
 
   if (id === 'admin' && pw === '1234') {
@@ -327,7 +327,7 @@ function handleLogin() {
       overlay.style.display = 'none';
     }, 200);
 
-    initSystem(); // 메인 데이터베이스 바인딩 엔진 시작
+    initSystem(); 
   } else {
     errorEl.style.display = 'block';
     $('userPw').value = '';
@@ -355,7 +355,6 @@ function switchView(viewName) {
   }
 }
 
-// 🛠️ d.html 오리지널 화면 생성 로직 100% 보존
 function renderTasks() {
   const tbody = $('tbl-tasks'); if(!tbody) return;
   tbody.innerHTML = '';
