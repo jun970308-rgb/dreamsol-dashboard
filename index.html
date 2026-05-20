@@ -3,23 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1c3f">
 <title>드림솔 시설관리 통합 대시보드 v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-    :root { --navy: #0f1c3f; --accent: #3b82f6; --text1: #1a202c; --text2: #4a5568; --text3: #718096; --bg: #f4f6f9; --red: #e53e3e; }
+    :root { --navy: #0f1c3f; --accent: #3b82f6; --red: #ef4444; --bg: #f0f4fa; --surface: #ffffff; --border: rgba(15,28,63,0.1); }
     body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
     
-    /* D-Day 카드 스타일 */
+    /* 법정점검 스타일 */
     .dday-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 28px; }
-    .dday-card { background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 8px; padding: 12px; cursor: pointer; border-left: 5px solid #48bb78; }
-    .dday-name { font-weight: 700; font-size: 12px; color: var(--text1); margin-bottom: 4px; }
+    .dday-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; cursor: pointer; border-left: 5px solid #48bb78; }
+    .dday-name { font-weight: 700; font-size: 12px; color: #1a202c; margin-bottom: 4px; }
     .dday-num { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: #2d3748; }
-    .dday-date { font-size: 11px; color: var(--text3); }
+    .dday-date { font-size: 11px; color: #718096; }
 
-    /* [핵심] 기한 초과 시 붉은색 스타일 */
-    .dday-over { border-left: 5px solid var(--red) !important; background: #fff5f5 !important; }
+    /* [핵심] 기한 초과 시 붉은색 강조 */
+    .dday-over { background: #fff5f5 !important; border-left: 5px solid var(--red) !important; }
     .dday-over .dday-num { color: var(--red) !important; }
+    .dday-over .dday-name { color: #9b2c2c !important; }
     
     .dday-add-btn { background: white; border: 1px dashed #cbd5e0; border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; color: #718096; font-size: 12px; }
 </style>
@@ -29,25 +33,28 @@
 <div id="dday-strip" class="dday-strip"></div>
 
 <script>
-// 기존 데이터/함수 유지 (생략된 부분은 그대로 두세요)
-
-// [수정된 렌더링 함수]
+/** * 법정점검 렌더링 함수
+ * 1. 완료된 항목은 필터링하여 제외
+ * 2. 날짜가 지난 항목은 dday-over 클래스 적용
+ */
 function renderDday() {
     const strip = document.getElementById('dday-strip');
     strip.innerHTML = '';
     
-    // 1. completed가 false인 것만 필터링 (완료된 건 숨김)
+    // 완료되지 않은 항목만 가져옴 (ddays는 기존 데이터 배열)
     const activeDdays = ddays.filter(d => !d.completed);
     
     activeDdays.slice(0, 5).forEach(d => {
-        const diff = diffDays(d.date);
+        const diff = diffDays(d.date); // 기존 diffDays 함수 사용
         let label = `D-${diff}`, cls = '';
         
-        // 2. 기한 초과(음수) 시 붉은색 클래스 적용
+        // 로직: 날짜 지남(음수) 시 빨간색 표시
         if (diff < 0) { 
             label = `기한초과 ${Math.abs(diff)}일`; 
             cls = 'dday-over'; 
-        } else if (diff === 0) { label = 'D-Day'; }
+        } else if (diff === 0) { 
+            label = 'D-Day'; 
+        }
 
         const card = document.createElement('div');
         card.className = `dday-card ${cls}`;
@@ -60,6 +67,7 @@ function renderDday() {
         strip.appendChild(card);
     });
 
+    // 추가 버튼
     const btn = document.createElement('div');
     btn.className = 'dday-add-btn';
     btn.onclick = () => showModal('dday');
@@ -67,8 +75,12 @@ function renderDday() {
     strip.appendChild(btn);
 }
 
-// 렌더링 실행
-renderDday();
+// 앱 초기화 시 로그인 화면 없이 바로 렌더링
+window.addEventListener('DOMContentLoaded', () => {
+    // 기존 initData() 및 renderAll() 호출 유지
+    initData();
+    renderAll();
+});
 </script>
 </body>
 </html>
