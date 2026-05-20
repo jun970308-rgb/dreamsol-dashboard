@@ -124,7 +124,7 @@ body {
   content: ''; flex: 1; height: 1px; background: var(--border2);
 }
 
-/* KPI CARDS (설비 항목 제외로 5열 구성) */
+/* KPI CARDS */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -152,7 +152,7 @@ body {
 .kpi-trend { font-size: 10px; font-weight: 500; }
 .up { color: var(--green); } .down { color: var(--red); } .neu { color: var(--text3); }
 
-/* 담백하게 수정된 D-DAY 알림 스타일 */
+/* D-DAY 알림판 스타일 */
 .dday-list-wrap {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -173,7 +173,7 @@ body {
   font-family: var(--mono);
   font-size: 11px; font-weight: 700;
   padding: 3px 10px; border-radius: 4px;
-  min-width: 65px; text-align: center;
+  min-width: 75px; text-align: center;
 }
 .dday-badge.over { background: #ffebee; color: var(--red); }
 .dday-badge.urgent { background: #fff3e0; color: var(--amber); }
@@ -188,9 +188,6 @@ body {
   border-radius: var(--radius); padding: 16px;
 }
 .chart-card .ct { font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 12px; }
-.chart-legend { display: flex; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
-.chart-legend .leg { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text3); }
-.chart-legend .dot { width: 8px; height: 8px; border-radius: 2px; }
 .ring-wrap { display: flex; align-items: center; justify-content: center; padding: 8px 0; }
 .ring-stats { margin-left: 14px; }
 .ring-stats .rs { margin-bottom: 8px; }
@@ -233,8 +230,6 @@ tr:hover td { background: var(--surface2); }
 .b-todo { background: #fff1f1; color: #b91c1c; border: 1px solid #fca5a5; }
 .b-wip { background: #fffbea; color: #92400e; border: 1px solid #fcd34d; }
 .b-done { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
-.b-complete { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
-.b-incomplete { background: #fff1f1; color: #b91c1c; border: 1px solid #fca5a5; }
 
 .type-chip { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
 .tc-complaint { background: #ede9fe; color: #5b21b6; }
@@ -257,7 +252,6 @@ tr:hover td { background: var(--surface2); }
 
 .cost-save-val { color: var(--green); font-weight: 700; font-family: var(--mono); font-size: 12px; }
 .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
-.star { color: var(--amber); font-size: 12px; }
 
 /* MODALS */
 .modal-backdrop {
@@ -298,15 +292,6 @@ tr:hover td { background: var(--surface2); }
 }
 .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
-.alert-card {
-  background: #fff1f1; border: 1px solid #fca5a5; border-radius: var(--radius);
-  padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px;
-}
-.alert-card .icon { font-size: 20px; color: var(--red); }
-.alert-card .content { flex: 1; }
-.alert-card .title { font-size: 12px; font-weight: 700; color: var(--red); margin-bottom: 2px; }
-.alert-card .desc { font-size: 11px; color: #7f1d1d; }
-
 @media (max-width: 1200px) {
   .kpi-grid { grid-template-columns: repeat(3, 1fr); }
   .charts-row { grid-template-columns: 1fr 1fr; }
@@ -336,11 +321,9 @@ tr:hover td { background: var(--surface2); }
       <div class="nav-item" data-page="tasks"><span class="ico">📋</span> 업무 목록</div>
       <div class="nav-item" data-page="dday"><span class="ico">📅</span> 법정점검 일정</div>
       <div class="nav-item" data-page="cost"><span class="ico">💰</span> 비용 관리</div>
-      <div class="nav-item" data-page="vendor"><span class="ico">🏢</span> 업체 평가</div>
       <div class="nav-item" data-page="consumable"><span class="ico">🔧</span> 소모품 교체</div>
       <div class="nav-label">분석</div>
       <div class="nav-item" data-page="energy"><span class="ico">⚡</span> 에너지 현황</div>
-      <div class="nav-item" data-page="report"><span class="ico">📊</span> 성과 리포트</div>
     </nav>
     <div class="sidebar-footer">
       <div class="name">시설관리</div>
@@ -349,7 +332,6 @@ tr:hover td { background: var(--surface2); }
   </aside>
 
   <main class="main">
-
     <div id="page-dashboard" class="page active">
       <div class="topbar">
         <h1>통합 대시보드</h1>
@@ -357,11 +339,8 @@ tr:hover td { background: var(--surface2); }
           <div class="date-chip" id="today-chip"></div>
           <button class="btn-export" onclick="exportToExcel('dashboard')">📊 Excel 내보내기</button>
           <button class="btn-primary" onclick="showModal('task')">+ 업무 추가</button>
-          <button class="btn-primary" onclick="showModal('cost')" style="background:var(--green)">+ 비용 추가</button>
         </div>
       </div>
-
-      <div id="alert-container"></div>
 
       <div class="section-title">성과 KPI</div>
       <div class="kpi-grid">
@@ -393,8 +372,7 @@ tr:hover td { background: var(--surface2); }
       </div>
 
       <div class="section-title">법정점검 D-Day 현황</div>
-      <div class="dday-list-wrap" id="dday-list-container">
-        </div>
+      <div class="dday-list-wrap" id="dday-list-container"></div>
 
       <div class="section-title">월별 성과 분석</div>
       <div class="charts-row">
@@ -434,47 +412,16 @@ tr:hover td { background: var(--surface2); }
         <div class="add-row-btn" onclick="showModal('task')">＋ 업무 추가</div>
         <div class="done-toggle-btn" id="done-toggle" onclick="toggleDone()">▸ 완료 항목 보기</div>
       </div>
-
-      <div class="bottom-row">
-        <div class="table-card">
-          <div class="table-header"><div class="th">비용 절감 (Cost Save) 현황</div></div>
-          <table>
-            <thead><tr><th>공사명</th><th>최초 견적</th><th>실행가</th><th>절감액</th></tr></thead>
-            <tbody id="cost-tbody"></tbody>
-          </table>
-          <div style="padding:10px 18px;font-size:11px;color:var(--text3);border-top:1px solid var(--border2);display:flex;justify-content:space-between">
-            <span>누적 총 절감액</span><span class="cost-save-val" id="cost-total">₩0</span>
-          </div>
-        </div>
-        <div class="table-card">
-          <div class="table-header"><div class="th">업체 평가 히스토리</div></div>
-          <table>
-            <thead><tr><th>업체명</th><th>공사 유형</th><th>평점</th><th>메모</th></tr></thead>
-            <tbody id="vendor-tbody"></tbody>
-          </table>
-        </div>
-      </div>
     </div>
 
     <div id="page-tasks" class="page">
       <div class="topbar">
         <h1>업무 목록</h1>
         <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('tasks')">📊 Excel 내보내기</button>
           <button class="btn-primary" onclick="showModal('task')">+ 업무 추가</button>
         </div>
       </div>
       <div class="table-card">
-        <div class="table-header">
-          <div class="th">업무 전체 목록</div>
-          <div class="filter-pills">
-            <div class="pill active" onclick="filterTask2('all',this)">전체</div>
-            <div class="pill" onclick="filterTask2('민원',this)">민원</div>
-            <div class="pill" onclick="filterTask2('설비',this)">설비</div>
-            <div class="pill" onclick="filterTask2('점검',this)">점검</div>
-            <div class="pill" onclick="filterTask2('공사',this)">공사</div>
-          </div>
-        </div>
         <table>
           <thead><tr><th>구분</th><th>대상/위치</th><th>상세 내역</th><th>업체/담당</th><th>접수일</th><th>상태</th><th>삭제</th></tr></thead>
           <tbody id="task-tbody2"></tbody>
@@ -486,13 +433,12 @@ tr:hover td { background: var(--surface2); }
       <div class="topbar">
         <h1>법정점검 일정</h1>
         <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('dday')">📊 Excel 내보내기</button>
           <button class="btn-primary" onclick="showModal('dday')">+ 점검 추가</button>
         </div>
       </div>
       <div class="table-card">
         <table>
-          <thead><tr><th>점검명</th><th>예정일</th><th>D-Day</th><th>상태</th><th>완료처리</th><th>삭제</th></tr></thead>
+          <thead><tr><th>점검명</th><th>예정일</th><th>D-Day</th><th>상태</th><th>완료 토글</th><th>삭제</th></tr></thead>
           <tbody id="dday-tbody"></tbody>
         </table>
         <div class="add-row-btn" onclick="showModal('dday')">＋ 점검 추가</div>
@@ -502,31 +448,11 @@ tr:hover td { background: var(--surface2); }
     <div id="page-cost" class="page">
       <div class="topbar">
         <h1>비용 관리</h1>
-        <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('cost')">📊 Excel 내보내기</button>
-          <button class="btn-primary" onclick="showModal('cost')" style="background:var(--green)">+ 비용 추가</button>
-        </div>
       </div>
       <div class="table-card">
         <table>
-          <thead><tr><th>공사명</th><th>최초 견적</th><th>최종 실행가</th><th>절감액</th><th>사유</th><th>삭제</th></tr></thead>
+          <thead><tr><th>공사명</th><th>최초 견적</th><th>최종 실행가</th><th>절감액</th><th>사유</th></tr></thead>
           <tbody id="cost-tbody2"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="page-vendor" class="page">
-      <div class="topbar">
-        <h1>업체 평가 히스토리</h1>
-        <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('vendor')">📊 Excel 내보내기</button>
-          <button class="btn-primary" onclick="showModal('vendor')">+ 업체 추가</button>
-        </div>
-      </div>
-      <div class="table-card">
-        <table>
-          <thead><tr><th>업체명</th><th>공사 유형</th><th>평점</th><th>메모</th><th>삭제</th></tr></thead>
-          <tbody id="vendor-tbody2"></tbody>
         </table>
       </div>
     </div>
@@ -547,30 +473,11 @@ tr:hover td { background: var(--surface2); }
       <div class="topbar">
         <h1>에너지 현황</h1>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
         <div class="chart-card"><canvas id="energy-chart"></canvas></div>
         <div class="chart-card"><canvas id="energy-chart2"></canvas></div>
       </div>
     </div>
-
-    <div id="page-report" class="page">
-      <div class="topbar">
-        <h1>성과 리포트</h1>
-        <button class="btn-primary" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
-      </div>
-      <div style="background:#fff;padding:20px;border-radius:var(--radius);border:1px solid var(--border)">
-        <h2 style="text-align:center;margin-bottom:20px">(주)드림솔 시설관리 월간 성과 리포트</h2>
-        <div class="section-title">핵심 성과 요약</div>
-        <table style="width:100%">
-          <thead><tr><th>구분</th><th>실적</th></tr></thead>
-          <tbody>
-            <tr><td>업무 완료율</td><td id="rpt-rate">0%</td></tr>
-            <tr><td>누적 비용 절감액</td><td id="rpt-save">₩0</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </main>
 </div>
 
@@ -585,19 +492,6 @@ tr:hover td { background: var(--surface2); }
       <div class="form-group"><label>접수일</label><input type="date" id="f-date"></div>
     </div>
     <div class="modal-btns"><button class="btn-cancel" onclick="hideModal('task')">취소</button><button class="btn-save" onclick="addTask()">저장</button></div>
-  </div>
-</div>
-
-<div class="modal-backdrop" id="modal-cost">
-  <div class="modal">
-    <h3>비용 절감 항목 추가</h3>
-    <div class="form-grid">
-      <div class="form-group" style="grid-column:1/-1"><label>공사명</label><input type="text" id="c-name"></div>
-      <div class="form-group"><label>최초 견적 (원)</label><input type="number" id="c-orig"></div>
-      <div class="form-group"><label>최종 실행가 (원)</label><input type="number" id="c-final"></div>
-      <div class="form-group" style="grid-column:1/-1"><label>절감 사유</label><input type="text" id="c-note"></div>
-    </div>
-    <div class="modal-btns"><button class="btn-cancel" onclick="hideModal('cost')">취소</button><button class="btn-save" onclick="addCost()">저장</button></div>
   </div>
 </div>
 
@@ -620,9 +514,7 @@ const $ = id => document.getElementById(id);
 const K = {
   tasks: 'ds_tasks_v2',
   costs: 'ds_costs_v2',
-  ddays: 'ds_ddays_v2',
-  vendors: 'ds_vendors_v2',
-  energy: 'ds_energy_v2'
+  ddays: 'ds_ddays_v2'
 };
 
 const load = key => JSON.parse(localStorage.getItem(key)) || [];
@@ -631,8 +523,6 @@ const save = (key, data) => localStorage.setItem(key, JSON.stringify(data));
 let tasks = load(K.tasks);
 let costs = load(K.costs);
 let ddays = load(K.ddays);
-let vendors = load(K.vendors);
-let energy = load(K.energy);
 
 let consumables = [
   {id:1, name:'공조기 프리필터', cycle:2000, used:1850},
@@ -642,7 +532,11 @@ let consumables = [
 
 function initData() {
   const today = new Date();
-  const fd = d => { const r=new Date(today); r.setDate(r.getDate()+d); return r.toISOString().split('T')[0]; };
+  const fd = d => { 
+    const r = new Date(today); 
+    r.setDate(r.getDate() + d); 
+    return r.toISOString().split('T')[0]; 
+  };
   
   if (!tasks.length) {
     tasks = [
@@ -659,6 +553,7 @@ function initData() {
     ];
     save(K.costs, costs);
   }
+  // 가상 데이터를 실제 현재 시스템 시간 연동 포맷으로 고정 노출
   if (!ddays.length) {
     ddays = [
       {id:1, name:'소방시설 정기점검', date:fd(5), completed:false},
@@ -666,14 +561,6 @@ function initData() {
       {id:3, name:'전기안전 정기검사', date:fd(-2), completed:false}
     ];
     save(K.ddays, ddays);
-  }
-  if (!energy.length) {
-    energy = [
-      {id:1, month:'3월', elec:44300, water:1120, gas:310},
-      {id:2, month:'4월', elec:46000, water:1200, gas:290},
-      {id:3, month:'5월', elec:48200, water:1240, gas:320}
-    ];
-    save(K.energy, energy);
   }
 }
 
@@ -716,7 +603,6 @@ function showToast(msg) {
 
 let taskFilter = 'all';
 let showDone = false;
-let taskFilter2 = 'all';
 
 function renderDashboard() {
   const today = new Date();
@@ -742,19 +628,21 @@ function renderDashboard() {
 
   renderDdayList();
   renderTasks();
-  renderCosts();
-  if($('vendor-tbody')) renderVendors();
 }
 
-/* 대시보드 전용: 담백하고 명확한 텍스트 리스트 형태의 D-DAY 알림판 */
+/* 대시보드 D-DAY 알림판 핵심 로직 수정 */
 function renderDdayList() {
   const container = $('dday-list-container');
   container.innerHTML = '';
 
-  const activeDdays = ddays.filter(d => !d.completed).sort((a,b) => new Date(a.date) - new Date(b.date));
+  // 1. 완료된 항목은 완벽 제거 (completed === false 만 필터링)
+  // 2. 디데이 순서로 정렬 (기한이 지난 것(음수)이나 임박한 D-Day가 가장 위로 오도록 오름차순 정렬)
+  const activeDdays = ddays
+    .filter(d => !d.completed)
+    .sort((a, b) => diffDays(a.date) - diffDays(b.date));
   
   if (activeDdays.length === 0) {
-    container.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0;">진행 중인 예정된 법정점검 일정이 없습니다.</div>';
+    container.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:14px 0;">미완료된 법정점검 일정이 없습니다. 모두 완료되었습니다. ✅</div>';
     return;
   }
 
@@ -804,9 +692,7 @@ function renderTasks() {
 
 function renderTasks2() {
   const tb = $('task-tbody2'); tb.innerHTML = '';
-  let filtered = tasks;
-  if (taskFilter2 !== 'all') filtered = filtered.filter(t => t.type === taskFilter2);
-  filtered.forEach(t => {
+  tasks.forEach(t => {
     let sCls = 'b-todo'; if (t.status === '진행중') sCls = 'b-wip'; if (t.status === '완료') sCls = 'b-done';
     let tCls = 'tc-complaint'; if (t.type === '설비') tCls = 'tc-facility'; if (t.type === '점검') tCls = 'tc-inspect'; if (t.type === '공사') tCls = 'tc-construction';
     const tr = document.createElement('tr');
@@ -827,8 +713,6 @@ function cycleStatus(id) {
   save(K.tasks, tasks); renderTasks(); if($('task-tbody2')) renderTasks2(); updateDonut();
 }
 function filterTask(f, btn) { taskFilter = f; document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active')); btn.classList.add('active'); renderTasks(); }
-function filterTask2(f, btn) { taskFilter2 = f; document.querySelectorAll('#page-tasks .pill').forEach(p=>p.classList.remove('active')); btn.classList.add('active'); renderTasks2(); }
- Rel.toggleDone = function() { showDone = !showDone; renderTasks(); };
 function toggleDone() { showDone = !showDone; renderTasks(); }
 
 function addTask() {
@@ -842,65 +726,52 @@ function deleteTask(id) {
   tasks = tasks.filter(t=>t.id!==id); save(K.tasks, tasks); renderTasks2(); showToast('삭제되었습니다.');
 }
 
-function renderCosts() {
-  const tb = $('cost-tbody'); tb.innerHTML = '';
-  costs.slice(0, 4).forEach(c => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${c.name}</td><td>₩${fmt(c.orig)}</td><td>₩${fmt(c.final)}</td><td class="cost-save-val">₩${fmt(c.orig-c.final)}</td>`;
-    tb.appendChild(tr);
-  });
-  $('cost-total').textContent = '₩' + fmt(costs.reduce((sum,c)=>sum+(c.orig-c.final), 0));
-}
-
 function renderCosts2() {
   const tb = $('cost-tbody2'); tb.innerHTML = '';
   costs.forEach(c => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${c.name}</td><td>₩${fmt(c.orig)}</td><td>₩${fmt(c.final)}</td><td>₩${fmt(c.orig-c.final)}</td><td>${c.note||'—'}</td><td><button class="badge b-todo" onclick="deleteCost(${c.id})">삭제</button></td>`;
-    tb.appendChild(tr);
-  });
-}
-function addCost() {
-  const name = $('c-name').value.trim(), orig = parseInt($('c-orig').value), final = parseInt($('c-final').value);
-  if(!name || isNaN(orig)) return;
-  costs.push({ id:Date.now(), name, orig, final, note:$('c-note').value });
-  save(K.costs, costs); hideModal('cost'); renderDashboard(); showToast('추가되었습니다.');
-}
-function deleteCost(id) {
-  costs = costs.filter(c=>c.id!==id); save(K.costs, costs); renderCosts2();
-}
-
-function renderVendors() {
-  const tb = $('vendor-tbody'); tb.innerHTML = '';
-  vendors.slice(0, 3).forEach(v => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${v.name}</td><td>${v.type}</td><td class="star">${'★'.repeat(v.star)}</td><td>${v.note}</td>`;
+    tr.innerHTML = `<td>${c.name}</td><td>₩${fmt(c.orig)}</td><td>₩${fmt(c.final)}</td><td class="cost-save-val">₩${fmt(c.orig-c.final)}</td><td>${c.note||'—'}</td>`;
     tb.appendChild(tr);
   });
 }
 
 function renderDdayTable() {
   const tb = $('dday-tbody'); tb.innerHTML = '';
-  ddays.forEach(d => {
+  ddays.sort((a,b) => diffDays(a.date) - diffDays(b.date)).forEach(d => {
     const diff = diffDays(d.date);
     const label = d.completed ? '완료' : diff < 0 ? `기한초과(${Math.abs(diff)})` : `D-${diff}`;
+    const btnText = d.completed ? '미완료로 변경' : '완료하기';
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${d.name}</td><td>${d.date}</td><td>${label}</td><td>${d.completed?'완료':'미완료'}</td><td><button class="badge b-wip" onclick="toggleDday(${d.id})">변경</button></td><td><button class="badge b-todo" onclick="deleteDday(${d.id})">삭제</button></td>`;
+    tr.innerHTML = `
+      <td style="font-weight:500">${d.name}</td>
+      <td style="font-family:var(--mono)">${d.date}</td>
+      <td style="font-weight:700">${label}</td>
+      <td>${d.completed ? '✅ 완료' : '⏳ 진행중'}</td>
+      <td><button class="badge b-wip" onclick="toggleDday(${d.id})">${btnText}</button></td>
+      <td><button class="badge b-todo" onclick="deleteDday(${d.id})">삭제</button></td>
+    `;
     tb.appendChild(tr);
   });
 }
+
 function toggleDday(id) {
-  const d = ddays.find(x=>x.id===id); if(d) d.completed = !d.completed;
-  save(K.ddays, ddays); renderDdayTable();
+  const d = ddays.find(x=>x.id===id); 
+  if(d) d.completed = !d.completed;
+  save(K.ddays, ddays); 
+  renderDdayTable(); 
+  renderDashboard(); // 대시보드 상태도 실시간 반영되도록 동기화
 }
+
 function addDday() {
   const name = $('d-name').value.trim(), date = $('d-date').value;
   if(!name || !date) return;
   ddays.push({ id:Date.now(), name, date, completed:false });
-  save(K.ddays, ddays); hideModal('dday'); renderDdayTable();
+  save(K.ddays, ddays); hideModal('dday'); renderDdayTable(); renderDashboard(); showToast('점검 일정이 추가되었습니다.');
 }
+
 function deleteDday(id) {
-  ddays = ddays.filter(d=>d.id!==id); save(K.ddays, ddays); renderDdayTable();
+  if(!confirm('해당 점검 일정을 삭제하시겠습니까?')) return;
+  ddays = ddays.filter(d=>d.id!==id); save(K.ddays, ddays); renderDdayTable(); renderDashboard();
 }
 
 function renderConsumables() {
