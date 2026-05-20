@@ -32,42 +32,35 @@
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; -webkit-tap-highlight-color: transparent; }
   body { background-color: var(--bg-main); color: var(--text-primary); display: flex; min-height: 100vh; overflow: hidden; font-size: 13px; }
   
-  /* 🔐 로그인 전체 오버레이 레이아웃 */
+  /* 🔐 로그인 레이어 스타일 추가 */
   .login-container {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background-color: #0f1c3f;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: flex; justify-content: center; align-items: center;
     z-index: 9999;
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    opacity: 1; visibility: visible;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
   }
   .login-box {
     background: #ffffff;
     padding: 40px;
     border-radius: 16px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    width: 100%; max-width: 380px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     text-align: center;
   }
   .login-box .logo { font-size: 24px; font-weight: 700; color: #0f1c3f; margin-bottom: 6px; }
   .login-box .logo span { color: var(--success); }
-  .login-box .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
-  .login-group { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-  .login-input { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  .login-box .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+  .login-group { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .login-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; }
   .login-input:focus { border-color: var(--primary); }
-  .login-btn { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 6px; transition: background 0.2s; }
+  .login-btn { width: 100%; padding: 13px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 4px; }
   .login-btn:hover { background: #1d4ed8; }
-  .login-error-msg { color: var(--danger); font-size: 12px; margin-top: 12px; display: none; font-weight: 500; }
+  .login-error-msg { color: var(--danger); font-size: 12px; margin-top: 10px; display: none; font-weight: 500; }
 
-  /* 사이드바 및 레이아웃 컴포넌트 */
   .sidebar { width: 240px; background-color: var(--sidebar-bg); color: #fff; padding: 24px; display: flex; flex-direction: column; gap: 32px; flex-shrink: 0; box-shadow: 2px 0 8px rgba(0,0,0,0.05); }
   .sidebar .logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; padding: 0 4px; }
   .sidebar .logo span { color: var(--success); }
@@ -284,10 +277,9 @@
 </div>
 
 <script>
-// 내부 축약형 DOM 선택기 정의
 const $ = id => document.getElementById(id);
 
-// ⚡ v2 최신 고도화 데이터셋 완벽 결합
+// 📦 원본 데이터 보존
 let tasks = [
   { type: '기계', detail: '5층 주방 싱크대 배수관 역류 통수작업', loc: '본관 5층', vendor: '삼형기계', status: '완료' },
   { type: '전기', detail: '지하주차장 노후 안정기 및 LED 3개소 교체', loc: '지하주차장', vendor: '자체수선', status: '완료' },
@@ -318,10 +310,10 @@ let energyData = [
 
 let charts = {};
 
-// 🔐 로그인 상태 및 제어 로직 (완벽 검증본)
+// 🔐 단독 추가된 안전 로그인 핸들러 (엔터 및 클릭 연동)
 function handleLogin() {
   const id = $('userId').value.trim();
-  const pw = $('userPw').value.trim();
+  const pw = ...
   const errorEl = $('loginError');
 
   if (id === 'admin' && pw === '1234') {
@@ -333,10 +325,9 @@ function handleLogin() {
     setTimeout(() => {
       overlay.style.visibility = 'hidden';
       overlay.style.display = 'none';
-    }, 300);
+    }, 200);
 
-    // 에러 발생 소지 차단 후 시스템 마운트 실행
-    initSystem();
+    initSystem(); // 메인 데이터베이스 바인딩 엔진 시작
   } else {
     errorEl.style.display = 'block';
     $('userPw').value = '';
@@ -364,16 +355,17 @@ function switchView(viewName) {
   }
 }
 
+// 🛠️ d.html 오리지널 화면 생성 로직 100% 보존
 function renderTasks() {
   const tbody = $('tbl-tasks'); if(!tbody) return;
   tbody.innerHTML = '';
   tasks.forEach((t, i) => {
     tbody.innerHTML += `
       <tr>
-        <td><input type="text" class="input-table" value="${t.type}" onchange="tasks(${i}).type=this.value"></td>
-        <td><input type="text" class="input-table" value="${t.detail}" onchange="tasks(${i}).detail=this.value"></td>
-        <td><input type="text" class="input-table" value="${t.loc}" onchange="tasks(${i}).loc=this.value"></td>
-        <td><input type="text" class="input-table" value="${t.vendor}" onchange="tasks(${i}).vendor=this.value"></td>
+        <td><input type="text" class="input-table" value="${t.type}" onchange="tasks[${i}].type=this.value"></td>
+        <td><input type="text" class="input-table" value="${t.detail}" onchange="tasks[${i}].detail=this.value"></td>
+        <td><input type="text" class="input-table" value="${t.loc}" onchange="tasks[${i}].loc=this.value"></td>
+        <td><input type="text" class="input-table" value="${t.vendor}" onchange="tasks[${i}].vendor=this.value"></td>
         <td>
           <select class="select-table" onchange="tasks[${i}].status=this.value; calculateMetrics();">
             <option value="진행중" ${t.status==='진행중'?'selected':''}>진행중</option>
@@ -472,7 +464,6 @@ function renderCharts() {
   if (charts.pie) charts.pie.destroy();
   if (charts.energy) charts.energy.destroy();
 
-  // 1. 민원 처리 추이 차트
   charts.task = new Chart($('chart-tasks'), {
     type: 'line',
     data: {
@@ -485,17 +476,15 @@ function renderCharts() {
     options: { responsive: true, maintainAspectRatio: false }
   });
 
-  // 2. 비용 절감 바 차트
   charts.cost = new Chart($('chart-costs'), {
     type: 'bar',
     data: {
-      labels: costs.map(c => c.name.substring(0,6) + '..'),
+      labels: costs.map(c => c.name ? c.name.substring(0,6) + '..' : '공사'),
       datasets: [{ label: '절감액 (SAVE)', data: costs.map(c => c.orig - c.final), backgroundColor: '#10b981' }]
     },
     options: { responsive: true, maintainAspectRatio: false }
   });
 
-  // 3. 업무 분포 비율 파이 차트
   charts.pie = new Chart($('chart-pie'), {
     type: 'pie',
     data: {
@@ -505,7 +494,6 @@ function renderCharts() {
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
   });
 
-  // 4. 에너지 사용량 혼합 차트
   charts.energy = new Chart($('chart-energy'), {
     type: 'bar',
     data: {
@@ -558,12 +546,20 @@ function downloadExcel(type) {
         ['담당자', '준서'],
         ['보고일', now.getFullYear() + '.' + (now.getMonth()+1) + '.' + now.getDate()],
         [],
-        ['핵심 성과 지표'],
+        ['핵심 성과 지표', ''],
         ['업무 완료율', $('rpt-rate').textContent],
         ['누적 비용 절감', $('rpt-save').textContent],
         ['법정점검 준수율', $('rpt-compliance').textContent],
-        ['설비 가동률', $('rpt-uptime').textContent]
+        ['설비 가동률', $('rpt-uptime').textContent],
+        [],
+        ['업무 완료 내역', '', '', '', ''],
+        ['구분', '내역', '위치', '업체', '상태']
       ];
+      tasks.forEach(t => data.push([t.type, t.detail, t.loc, t.vendor, t.status]));
+      data.push([]);
+      data.push(['비용 절감 실적', '', '', '', '']);
+      data.push(['공사명', '최초견적', '실행가', '절감액', '절감사유']);
+      costs.forEach(c => data.push([c.name, c.orig, c.final, c.orig - c.final, c.note]));
       filename = '성과리포트';
       break;
   }
