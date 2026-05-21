@@ -109,7 +109,10 @@ body {
   transition: background 0.15s;
 }
 .btn-primary:hover { background: var(--navy2); }
-.btn-export {
+.period-month-btn { padding:5px 12px;border:1px solid var(--border);background:#fff;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;color:var(--sub);transition:all 0.15s;font-weight:500; }
+.period-month-btn:hover { border-color:var(--navy);color:var(--navy); }
+.period-month-btn.active { background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600; }
+.btn-export { 
   background: var(--green); color: #fff;
   font-size: 11px; font-weight: 500; padding: 6px 14px;
   border-radius: var(--radius-sm); border: none; cursor: pointer;
@@ -129,7 +132,7 @@ body {
 /* ── KPI CARDS ── */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px; margin-bottom: 28px;
 }
 .kpi-card {
@@ -414,7 +417,6 @@ tr:hover td { background: var(--surface2); }
       <div class="nav-item" data-page="dday"><span class="ico">📅</span> 법정점검 일정</div>
       <div class="nav-item" data-page="cost"><span class="ico">💰</span> 비용 관리</div>
       <div class="nav-item" data-page="vendor"><span class="ico">🏢</span> 업체 평가</div>
-      <div class="nav-item" data-page="equipment"><span class="ico">⚙️</span> 설비 가동률</div>
       <div class="nav-item" data-page="consumable"><span class="ico">🔧</span> 소모품 교체</div>
       <div class="nav-label">분석</div>
       <div class="nav-item" data-page="energy"><span class="ico">⚡</span> 에너지 현황</div>
@@ -433,9 +435,6 @@ tr:hover td { background: var(--surface2); }
       <h1>통합 대시보드</h1>
       <div class="topbar-right">
         <div class="date-chip" id="today-chip"></div>
-        <button class="btn-export" onclick="exportToExcel('dashboard')">📊 Excel 내보내기</button>
-        <button class="btn-primary" onclick="showModal('task')">+ 업무 추가</button>
-        <button class="btn-primary" onclick="showModal('cost')" style="background:var(--green)">+ 비용 추가</button>
       </div>
     </div>
 
@@ -458,26 +457,16 @@ tr:hover td { background: var(--surface2); }
         <div class="kpi-value" id="kpi-todo">0<span>건</span></div>
         <div class="kpi-trend neu" id="kpi-todo-sub">즉시 처리 필요</div>
       </div>
-      <div class="kpi-card amber">
-        <div class="kpi-label">설비 가동률</div>
-        <div class="kpi-value" id="kpi-uptime">0<span>%</span></div>
-        <div class="kpi-trend neu" id="kpi-uptime-sub">—</div>
-      </div>
       <div class="kpi-card purple">
         <div class="kpi-label">법정점검 준수율</div>
         <div class="kpi-value" id="kpi-compliance">0<span>%</span></div>
         <div class="kpi-trend up" id="kpi-compliance-sub">—</div>
       </div>
-      <div class="kpi-card navy">
-        <div class="kpi-label">평균 처리기간</div>
-        <div class="kpi-value" id="kpi-days">2.4<span>일</span></div>
-        <div class="kpi-trend up">▲ 전월 대비 –0.8일</div>
-      </div>
+
     </div>
 
     <div class="section-title">법정점검 D-Day 알림</div>
     <div class="dday-strip" id="dday-strip">
-      <div class="dday-add-btn" onclick="showModal('dday')">＋ 점검 추가</div>
     </div>
 
     <div class="section-title">월별 성과 분석</div>
@@ -529,17 +518,12 @@ tr:hover td { background: var(--surface2); }
         </thead>
         <tbody id="task-tbody"></tbody>
       </table>
-      <div class="add-row-btn" onclick="showModal('task')">＋ 업무 추가</div>
-      <div class="done-toggle-btn" id="done-toggle" onclick="toggleDone()">
-        ▸ 완료 항목 보기
-      </div>
     </div>
 
     <div class="bottom-row">
       <div class="table-card">
         <div class="table-header">
           <div class="th">비용 절감 (Cost Save) 현황</div>
-          <button class="btn-primary" onclick="showModal('cost')" style="font-size:10px;padding:4px 10px">+ 추가</button>
         </div>
         <table>
           <thead>
@@ -556,7 +540,6 @@ tr:hover td { background: var(--surface2); }
       <div class="table-card">
         <div class="table-header">
           <div class="th">업체 평가 히스토리</div>
-          <button class="btn-primary" onclick="showModal('vendor')" style="font-size:10px;padding:4px 10px">+ 추가</button>
         </div>
         <table>
           <thead>
@@ -643,7 +626,7 @@ tr:hover td { background: var(--surface2); }
       <div class="table-card">
         <div class="table-header"><div class="th">공사별 비용 절감 상세</div></div>
         <table>
-          <thead><tr><th>공사명</th><th>최초 견적</th><th>최종 실행가</th><th>절감액</th><th>절감률</th><th>사유</th><th>삭제</th></tr></thead>
+          <thead><tr><th>공사명</th><th>요청 부서</th><th>날짜</th><th>최초 견적</th><th>최종 실행가</th><th>절감액</th><th>절감률</th><th>사유</th><th>삭제</th></tr></thead>
           <tbody id="cost-tbody2"></tbody>
         </table>
         <div class="add-row-btn" onclick="showModal('cost')">＋ 비용 추가</div>
@@ -666,25 +649,6 @@ tr:hover td { background: var(--surface2); }
           <tbody id="vendor-tbody2"></tbody>
         </table>
         <div class="add-row-btn" onclick="showModal('vendor')">＋ 업체 추가</div>
-      </div>
-    </div>
-
-    <div id="page-equipment" class="page">
-      <div class="topbar">
-        <h1>설비 가동률 관리</h1>
-        <div class="topbar-right">
-          <button class="btn-export" onclick="exportToExcel('equipment')">📊 Excel 내보내기</button>
-          <button class="btn-primary" onclick="showModal('equipment')">+ 설비 추가</button>
-        </div>
-      </div>
-      <div class="section-title">설비 가동 현황</div>
-      <div class="table-card">
-        <div class="table-header"><div class="th">설비 가동 기록</div></div>
-        <table>
-          <thead><tr><th>설비명</th><th>설비 위치</th><th>측정 기간</th><th>가동 일수</th><th>가동률</th><th>삭제</th></tr></thead>
-          <tbody id="equipment-tbody"></tbody>
-        </table>
-        <div class="add-row-btn" onclick="showModal('equipment')">＋ 설비 추가</div>
       </div>
     </div>
 
@@ -717,9 +681,9 @@ tr:hover td { background: var(--surface2); }
       </div>
       <div class="section-title">월별 에너지 사용량</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
-        <div class="kpi-card blue"><div class="kpi-label">전기 (이번 달)</div><div class="kpi-value">48,200<span>kWh</span></div><div class="kpi-trend down">▼ 전월 대비 –3.2%</div></div>
-        <div class="kpi-card green"><div class="kpi-label">용수 (이번 달)</div><div class="kpi-value">1,240<span>㎥</span></div><div class="kpi-trend up">▲ 전월 대비 +1.1%</div></div>
-        <div class="kpi-card amber"><div class="kpi-label">가스 (이번 달)</div><div class="kpi-value">320<span>㎥</span></div><div class="kpi-trend up">▲ 전월 대비 +0.5%</div></div>
+        <div class="kpi-card blue"><div class="kpi-label">전기 (최근 월)</div><div class="kpi-value" id="en-kpi-elec">—<span>kWh</span></div><div class="kpi-trend neu" id="en-kpi-elec-trend">데이터 없음</div></div>
+        <div class="kpi-card green"><div class="kpi-label">용수 (최근 월)</div><div class="kpi-value" id="en-kpi-water">—<span>㎥</span></div><div class="kpi-trend neu" id="en-kpi-water-trend">데이터 없음</div></div>
+        <div class="kpi-card amber"><div class="kpi-label">가스 (최근 월)</div><div class="kpi-value" id="en-kpi-gas">—<span>㎥</span></div><div class="kpi-trend neu" id="en-kpi-gas-trend">데이터 없음</div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:14px">
         <div class="chart-card">
@@ -752,17 +716,28 @@ tr:hover td { background: var(--surface2); }
           <button class="btn-primary" onclick="printReport()">🖨 인쇄 / PDF 저장</button>
         </div>
       </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;padding:12px 20px;background:#fff;border-bottom:1px solid var(--border)">
+        <button class="period-month-btn" onclick="setReportMonth(0)">전체</button>
+        <button class="period-month-btn" onclick="setReportMonth(1)">1월</button>
+        <button class="period-month-btn" onclick="setReportMonth(2)">2월</button>
+        <button class="period-month-btn" onclick="setReportMonth(3)">3월</button>
+        <button class="period-month-btn" onclick="setReportMonth(4)">4월</button>
+        <button class="period-month-btn" onclick="setReportMonth(5)">5월</button>
+        <button class="period-month-btn" onclick="setReportMonth(6)">6월</button>
+        <button class="period-month-btn" onclick="setReportMonth(7)">7월</button>
+        <button class="period-month-btn" onclick="setReportMonth(8)">8월</button>
+        <button class="period-month-btn" onclick="setReportMonth(9)">9월</button>
+        <button class="period-month-btn" onclick="setReportMonth(10)">10월</button>
+        <button class="period-month-btn" onclick="setReportMonth(11)">11월</button>
+        <button class="period-month-btn" onclick="setReportMonth(12)">12월</button>
+      </div>
       <div class="table-card" style="padding:40px;background:#fff;color:#000;max-width:800px;margin:0 auto;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
         <div style="text-align:center;margin-bottom:40px">
-          <h2 style="font-size:24px;font-weight:700;letter-spacing:1px;margin-bottom:10px">드림솔 시설관리 월간 성과 요약</h2>
-          <div style="font-size:12px;color:#666" id="rpt-date-range">보고기간: 2026년 5월</div>
+          <h2 style="font-size:24px;font-weight:700;letter-spacing:1px;margin-bottom:10px" id="rpt-title">드림솔 시설관리 월간 성과 요약</h2>
         </div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:30px;font-size:13px;border-bottom:2px solid #000;padding-bottom:10px">
-          <span>담당자: 준서</span>
-          <span id="rpt-generated-date">보고일: 2026.05.20</span>
-        </div>
+        <div style="border-bottom:2px solid #000;margin-bottom:30px"></div>
         <h3 style="font-size:14px;font-weight:700;margin-bottom:15px;border-left:4px solid var(--navy);padding-left:8px">1. 핵심 성과 지표 (KPI)</h3>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:40px;text-align:center">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:40px;text-align:center">
           <div style="background:#f8fafc;padding:15px;border:1px solid #e2e8f0;border-radius:6px">
             <div style="font-size:11px;color:#64748b;margin-bottom:5px">업무 완료율</div>
             <div style="font-size:18px;font-weight:700" id="rpt-rate">0%</div>
@@ -775,10 +750,6 @@ tr:hover td { background: var(--surface2); }
             <div style="font-size:11px;color:#64748b;margin-bottom:5px">법정점검 준수율</div>
             <div style="font-size:18px;font-weight:700" id="rpt-compliance">0%</div>
           </div>
-          <div style="background:#f8fafc;padding:15px;border:1px solid #e2e8f0;border-radius:6px">
-            <div style="font-size:11px;color:#64748b;margin-bottom:5px">설비 가동률</div>
-            <div style="font-size:18px;font-weight:700" id="rpt-uptime">0%</div>
-          </div>
         </div>
         <h3 style="font-size:14px;font-weight:700;margin-bottom:15px;border-left:4px solid var(--navy);padding-left:8px">2. 주요 업무 완료 내역 (최근 10건)</h3>
         <table style="width:100%;font-size:12px;margin-bottom:40px" class="rpt-table">
@@ -790,9 +761,10 @@ tr:hover td { background: var(--surface2); }
         <h3 style="font-size:14px;font-weight:700;margin-bottom:15px;border-left:4px solid var(--navy);padding-left:8px">3. 비용 절감 실적</h3>
         <table style="width:100%;font-size:12px;margin-bottom:40px" class="rpt-table">
           <thead>
-            <tr style="background:#f1f5f9"><th style="padding:6px;border:1px solid #cbd5e1">공사명</th><th style="padding:6px;border:1px solid #cbd5e1">최초견적</th><th style="padding:6px;border:1px solid #cbd5e1">실행가</th><th style="padding:6px;border:1px solid #cbd5e1">절감액</th><th style="padding:6px;border:1px solid #cbd5e1">절감사유</th></tr>
+            <tr style="background:#f1f5f9"><th style="padding:6px;border:1px solid #cbd5e1">공사명</th><th style="padding:6px;border:1px solid #cbd5e1">요청부서</th><th style="padding:6px;border:1px solid #cbd5e1">날짜</th><th style="padding:6px;border:1px solid #cbd5e1">최초견적</th><th style="padding:6px;border:1px solid #cbd5e1">실행가</th><th style="padding:6px;border:1px solid #cbd5e1">절감액</th><th style="padding:6px;border:1px solid #cbd5e1">절감사유</th></tr>
           </thead>
           <tbody id="report-costs"></tbody>
+          <tfoot id="report-costs-total"></tfoot>
         </table>
         <h3 style="font-size:14px;font-weight:700;margin-bottom:15px;border-left:4px solid var(--navy);padding-left:8px">4. 향후 예정 법정점검</h3>
         <table style="width:100%;font-size:12px;" class="rpt-table">
@@ -848,6 +820,14 @@ tr:hover td { background: var(--surface2); }
       <div class="form-group" style="grid-column:1/-1">
         <label>공사명</label>
         <input type="text" id="c-name" placeholder="예: 흡연실 조성 공사">
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>요청 부서</label>
+        <input type="text" id="c-dept" placeholder="예: 총무팀">
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>공사 날짜</label>
+        <input type="date" id="c-date">
       </div>
       <div class="form-group">
         <label>최초 견적 (원)</label>
@@ -923,34 +903,6 @@ tr:hover td { background: var(--surface2); }
   </div>
 </div>
 
-<div class="modal-backdrop" id="modal-equipment">
-  <div class="modal">
-    <h3>설비 가동 기록 추가</h3>
-    <div class="form-grid">
-      <div class="form-group" style="grid-column:1/-1">
-        <label>설비명</label>
-        <input type="text" id="eq-name" placeholder="예: 냉동기 1호기">
-      </div>
-      <div class="form-group" style="grid-column:1/-1">
-        <label>설비 위치</label>
-        <input type="text" id="eq-loc" placeholder="예: 지하 2층 기계실">
-      </div>
-      <div class="form-group">
-        <label>총 측정 일수</label>
-        <input type="number" id="eq-total-days" placeholder="30">
-      </div>
-      <div class="form-group">
-        <label>실제 가동 일수</label>
-        <input type="number" id="eq-run-days" placeholder="28">
-      </div>
-    </div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="hideModal('equipment')">취소</button>
-      <button class="btn-save" onclick="addEquipment()">저장</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-backdrop" id="modal-consumable">
   <div class="modal">
     <h3>소모품 항목 추가</h3>
@@ -1018,7 +970,7 @@ tr:hover td { background: var(--surface2); }
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"><span id="toast-msg"></span><button id="toast-undo" style="display:none;margin-left:10px;background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:11px;padding:2px 8px;border-radius:4px;cursor:pointer">되돌리기</button></div>
 
 <script>
 /* ══════════════════════════════════════════════════ LOGIN SYSTEM ══════════════════════════════════════════════════ */
@@ -1060,8 +1012,8 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ══════════════════════════════════════════════════ CORE ENGINE ══════════════════════════════════════════════════ */
-const K = { tasks:'ds_tasks', costs:'ds_costs', vendors:'ds_vendors', ddays:'ds_ddays', equipment:'ds_equipment', consumables:'ds_consumables', energy:'ds_energy' };
-let tasks = [], costs = [], vendors = [], ddays = [], equipment = [], consumables = [], energy = [];
+const K = { tasks:'ds_tasks', costs:'ds_costs', vendors:'ds_vendors', ddays:'ds_ddays', consumables:'ds_consumables', energy:'ds_energy' };
+let tasks = [], costs = [], vendors = [], ddays = [], consumables = [], energy = [];
 let taskFilter = 'all', taskFilter2 = 'all', showDone = false;
 
 function $(id) { return document.getElementById(id); }
@@ -1071,7 +1023,7 @@ function fmt(n) { return n.toLocaleString(); }
 
 function initData() {
   tasks = load(K.tasks); costs = load(K.costs); vendors = load(K.vendors);
-  ddays = load(K.ddays); equipment = load(K.equipment); consumables = load(K.consumables); energy = load(K.energy);
+  ddays = load(K.ddays); consumables = load(K.consumables); energy = load(K.energy);
 
   const today = new Date();
   const fd = d => {
@@ -1115,14 +1067,6 @@ function initData() {
     ];
     save(K.vendors, vendors);
   }
-  if (!equipment.length) {
-    equipment = [
-      {id:1, name:'흡수식 냉동기 1호기', loc:'지하 2층 기계실', totalDays:30, runDays:29},
-      {id:2, name:'냉각탑 A호기', loc:'옥상', totalDays:30, runDays:27},
-      {id:3, name:'공조기 AHU-3', loc:'4층 공조실', totalDays:30, runDays:24}
-    ];
-    save(K.equipment, equipment);
-  }
   if (!consumables.length) {
     consumables = [
       {id:1, name:'공조기 프리필터', cycle:2000, used:1920},
@@ -1149,7 +1093,8 @@ function renderAll() {
   $('today-chip').textContent = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
   renderAlerts(); renderKPI(); renderDday(); renderTasks(); renderTasks2();
   renderCosts(); renderCosts2(); renderVendors(); renderVendors2();
-  renderEquipment(); renderConsumables(); renderEnergyTable();
+  renderConsumables(); renderEnergyTable();
+  renderBarChart(); renderLineChart(); updateDonut();
 }
 
 /* ── ROUTING ── */
@@ -1168,9 +1113,11 @@ function navigateTo(page) {
   if (page === 'dday') renderDdayTable();
   if (page === 'cost') renderCosts2();
   if (page === 'vendor') renderVendors2();
-  if (page === 'equipment') renderEquipment();
   if (page === 'consumable') renderConsumables();
-  if (page === 'report') renderReport();
+  if (page === 'report') {
+    document.querySelectorAll('.period-month-btn').forEach((btn, i) => btn.classList.toggle('active', i === selectedReportMonth));
+    renderReport();
+  }
   if (page === 'energy') renderEnergyCharts();
 }
 
@@ -1193,24 +1140,7 @@ document.querySelectorAll('.modal-backdrop').forEach(el => {
 
 /* ── ALERTS ── */
 function renderAlerts() {
-  const container = $('alert-container');
-  container.innerHTML = '';
-  const urgentInspections = ddays.filter(d => !d.completed && diffDays(d.date) <= 7);
-  urgentInspections.forEach(d => {
-    const diff = diffDays(d.date);
-    const msg = diff < 0 ? `${d.name} 점검 기한이 ${Math.abs(diff)}일 초과했습니다!` : `${d.name} 점검이 ${diff}일 남았습니다!`;
-    const alert = document.createElement('div');
-    alert.className = 'alert-card';
-    alert.innerHTML = `
-      <div class="icon">⚠️</div>
-      <div class="content">
-        <div class="title">법정점검 긴급</div>
-        <div class="desc">${msg}</div>
-      </div>
-      <button class="btn-primary" onclick="navigateTo('dday')" style="font-size:10px;padding:4px 10px">확인</button>
-    `;
-    container.appendChild(alert);
-  });
+  // 법정점검 긴급 알림 비활성화
 }
 
 function diffDays(d) {
@@ -1242,7 +1172,8 @@ function renderDday() {
   strip.innerHTML = '';
   
   // ★ 원래대로 완료되지 않은 항목(!d.completed)만 대시보드 알림판에 노출되도록 필터링을 유지합니다. ★
-  const activeDdays = ddays.filter(d => !d.completed);
+  const activeDdays = ddays.filter(d => !d.completed)
+    .sort((a, b) => diffDays(a.date) - diffDays(b.date));
   
   activeDdays.slice(0, 5).forEach(d => {
     const diff = diffDays(d.date);
@@ -1255,7 +1186,6 @@ function renderDday() {
 
     const card = document.createElement('div');
     card.className = `dday-card ${cls}`;
-    card.onclick = () => navigateTo('dday');
     card.innerHTML = `
       <div class="dd-name">${d.name}</div>
       <div class="dd-num">${label}</div>
@@ -1263,12 +1193,6 @@ function renderDday() {
     `;
     strip.appendChild(card);
   });
-
-  const btn = document.createElement('div');
-  btn.className = 'dday-add-btn';
-  btn.onclick = () => showModal('dday');
-  btn.textContent = '＋ 점검 추가';
-  strip.appendChild(btn);
 }
 
 function renderDdayTable() {
@@ -1333,11 +1257,11 @@ function addDday() {
 }
 
 function deleteDday(id) {
-  if (!confirm('정말 삭제하시겠습니까?')) return;
+  const backup = [...ddays];
   ddays = ddays.filter(d => d.id !== id);
   save(K.ddays, ddays);
   renderDday(); renderDdayTable();
-  showToast('점검 일정이 삭제되었습니다.');
+  showDeleteToast('점검 일정이 삭제되었습니다.', () => { ddays = backup; save(K.ddays, ddays); renderDday(); renderDdayTable(); });
 }
 
 /* ── TASKS ── */
@@ -1364,11 +1288,10 @@ function renderTasks() {
       <td style="color:var(--text2)">${t.detail}</td>
       <td style="font-size:11px;color:var(--text3)">${t.vendor}</td>
       <td style="font-family:var(--mono);font-size:11px">${t.date}</td>
-      <td><span class="badge ${sc}" onclick="cycleStatus(${t.id})">${t.status}</span></td>
+      <td><span class="badge ${sc}">${t.status}</span></td>
     `;
     tb.appendChild(tr);
   });
-  $('done-toggle').textContent = showDone ? '▰ 완료 항목 숨기기' : '▸ 완료 항목 보기';
 }
 
 function renderTasks2() {
@@ -1404,7 +1327,7 @@ function cycleStatus(id) {
   const cycle = ['미착수','진행중','완료'];
   t.status = cycle[(cycle.indexOf(t.status)+1)%3];
   save(K.tasks, tasks);
-  renderTasks(); renderTasks2(); updateDonut();
+  renderTasks(); renderTasks2(); updateDonut(); renderBarChart();
 }
 
 function filterTask(f, btn) {
@@ -1430,16 +1353,16 @@ function addTask() {
   tasks.push({ id: Date.now(), type, loc, detail, vendor, date, status:'미착수' });
   save(K.tasks, tasks);
   $('f-loc').value=''; $('f-detail').value=''; $('f-vendor').value='';
-  hideModal('task'); renderTasks(); renderTasks2(); updateDonut();
+  hideModal('task'); renderTasks(); renderTasks2(); updateDonut(); renderBarChart();
   showToast('업무가 추가되었습니다.');
 }
 
 function deleteTask(id) {
-  if (!confirm('정말 삭제하시겠습니까?')) return;
+  const backup = [...tasks];
   tasks = tasks.filter(t => t.id !== id);
   save(K.tasks, tasks);
-  renderTasks(); renderTasks2(); updateDonut();
-  showToast('업무가 삭제되었습니다.');
+  renderTasks(); renderTasks2(); updateDonut(); renderBarChart();
+  showDeleteToast('업무가 삭제되었습니다.', () => { tasks = backup; save(K.tasks, tasks); renderTasks(); renderTasks2(); updateDonut(); renderBarChart(); });
 }
 
 /* ── COSTS ── */
@@ -1464,6 +1387,8 @@ function renderCosts2() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td style="font-weight:500">${c.name}</td>
+      <td style="font-size:11px;color:var(--text2)">${c.dept||'—'}</td>
+      <td style="font-size:11px;color:var(--text2)">${c.date||'—'}</td>
       <td style="font-family:var(--mono)">₩${fmt(c.orig)}</td>
       <td style="font-family:var(--mono)">₩${fmt(c.final)}</td>
       <td class="cost-save-val">₩${fmt(diff)}</td>
@@ -1481,19 +1406,19 @@ function renderCosts2() {
 function addCost() {
   const name = $('c-name').value.trim(), orig = parseInt($('c-orig').value)||0, final = parseInt($('c-final').value)||0;
   if (!name) return;
-  costs.push({ id: Date.now(), name, orig, final, note: $('c-note').value.trim() });
+  costs.push({ id: Date.now(), name, dept: $('c-dept').value.trim(), date: $('c-date').value, orig, final, note: $('c-note').value.trim() });
   save(K.costs, costs);
-  $('c-name').value=''; $('c-orig').value=''; $('c-final').value=''; $('c-note').value='';
-  hideModal('cost'); renderCosts(); renderCosts2();
+  $('c-name').value=''; $('c-dept').value=''; $('c-date').value=''; $('c-orig').value=''; $('c-final').value=''; $('c-note').value='';
+  hideModal('cost'); renderCosts(); renderCosts2(); renderLineChart();
   showToast('비용 항목이 추가되었습니다.');
 }
 
 function deleteCost(id) {
-  if (!confirm('정말 삭제하시겠습니까?')) return;
+  const backup = [...costs];
   costs = costs.filter(c => c.id !== id);
   save(K.costs, costs);
-  renderCosts(); renderCosts2();
-  showToast('비용 항목이 삭제되었습니다.');
+  renderCosts(); renderCosts2(); renderLineChart();
+  showDeleteToast('비용 항목이 삭제되었습니다.', () => { costs = backup; save(K.costs, costs); renderCosts(); renderCosts2(); renderLineChart(); });
 }
 
 /* ── VENDORS ── */
@@ -1538,48 +1463,11 @@ function addVendor() {
 }
 
 function deleteVendor(id) {
-  if (!confirm('정말 삭제하시겠습니까?')) return;
+  const backup = [...vendors];
   vendors = vendors.filter(v => v.id !== id);
   save(K.vendors, vendors);
   renderVendors(); renderVendors2();
-  showToast('업체가 삭제되었습니다.');
-}
-
-/* ── EQUIPMENT ── */
-function renderEquipment() {
-  const tb = $('equipment-tbody'); tb.innerHTML = '';
-  equipment.forEach(e => {
-    const rate = e.totalDays ? Math.round((e.runDays / e.totalDays) * 100) : 0;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="font-weight:500">${e.name}</td><td>${e.loc}</td>
-      <td style="font-family:var(--mono)">${e.totalDays}일</td><td style="font-family:var(--mono)">${e.runDays}일</td>
-      <td style="font-family:var(--mono);font-weight:700;color:var(--accent)">${rate}%</td>
-      <td><button class="badge b-todo" onclick="deleteEquipment(${e.id})">삭제</button></td>
-    `;
-    tb.appendChild(tr);
-  });
-  const avg = equipment.length ? Math.round(equipment.reduce((sum,e)=>(e.totalDays?sum+(e.runDays/e.totalDays)*100:sum),0)/equipment.length) : 0;
-  $('kpi-uptime').innerHTML = avg + '<span>%</span>';
-  $('kpi-uptime-sub').textContent = `전체 설비 가동 성능 지표`;
-}
-
-function addEquipment() {
-  const name = $('eq-name').value.trim(), loc = $('eq-loc').value.trim();
-  const totalDays = parseInt($('eq-total-days').value)||30, runDays = parseInt($('eq-run-days').value)||0;
-  if (!name) return;
-  equipment.push({ id: Date.now(), name, loc, totalDays, runDays });
-  save(K.equipment, equipment);
-  $('eq-name').value=''; $('eq-loc').value=''; $('eq-total-days').value=''; $('eq-run-days').value='';
-  hideModal('equipment'); renderEquipment();
-  showToast('설비가 추가되었습니다.');
-}
-
-function deleteEquipment(id) {
-  if (!confirm('정말 삭제하시겠습니까?')) return;
-  equipment = equipment.filter(e => e.id !== id);
-  save(K.equipment, equipment);
-  renderEquipment(); showToast('설비가 삭제되었습니다.');
+  showDeleteToast('업체가 삭제되었습니다.', () => { vendors = backup; save(K.vendors, vendors); renderVendors(); renderVendors2(); });
 }
 
 /* ── CONSUMABLES ── */
@@ -1619,9 +1507,11 @@ function resetConsumable(id) {
 }
 
 function deleteConsumable(id) {
-  if (!confirm('정말 삭제하시겠습니까?')) return;
-  consumables = consumables.filter(c => c.id !== id); save(K.consumables, consumables);
-  renderConsumables(); showToast('소모품이 삭제되었습니다.');
+  const backup = [...consumables];
+  consumables = consumables.filter(c => c.id !== id);
+  save(K.consumables, consumables);
+  renderConsumables();
+  showDeleteToast('소모품이 삭제되었습니다.', () => { consumables = backup; save(K.consumables, consumables); renderConsumables(); });
 }
 
 /* ── ENERGY ── */
@@ -1639,6 +1529,24 @@ function renderEnergyTable() {
     `;
     tb.appendChild(tr);
   });
+
+  /* ── 에너지 KPI 카드 업데이트 ── */
+  function setEnKpi(valId, trendId, cur, prev, unit) {
+    if (cur === undefined) { $(valId).innerHTML = '—<span>' + unit + '</span>'; $(trendId).textContent = '데이터 없음'; $(trendId).className = 'kpi-trend neu'; return; }
+    $(valId).innerHTML = fmt(cur) + '<span>' + unit + '</span>';
+    if (prev === undefined) { $(trendId).textContent = '전월 데이터 없음'; $(trendId).className = 'kpi-trend neu'; return; }
+    const diff = cur - prev;
+    const pct = prev ? ((diff / prev) * 100).toFixed(1) : 0;
+    const sign = diff > 0 ? '▲' : '▼';
+    const cls = diff > 0 ? 'up' : 'down';
+    $(trendId).textContent = `${sign} 전월 대비 ${diff > 0 ? '+' : ''}${pct}%`;
+    $(trendId).className = 'kpi-trend ' + cls;
+  }
+  const last = energy[energy.length - 1];
+  const prev = energy[energy.length - 2];
+  setEnKpi('en-kpi-elec',  'en-kpi-elec-trend',  last?.elec,  prev?.elec,  'kWh');
+  setEnKpi('en-kpi-water', 'en-kpi-water-trend', last?.water, prev?.water, '㎥');
+  setEnKpi('en-kpi-gas',   'en-kpi-gas-trend',   last?.gas,   prev?.gas,   '㎥');
 }
 
 function addEnergy() {
@@ -1656,8 +1564,12 @@ function addEnergy() {
 }
 
 function deleteEnergy(idx) {
-  if (!confirm('삭제하시겠습니까?')) return; energy.splice(idx, 1);
-  save(K.energy, energy); renderEnergyTable(); if ($('page-energy').classList.contains('active')) renderEnergyCharts();
+  const backup = [...energy];
+  energy.splice(idx, 1);
+  save(K.energy, energy);
+  renderEnergyTable();
+  if ($('page-energy').classList.contains('active')) renderEnergyCharts();
+  showDeleteToast('에너지 데이터가 삭제되었습니다.', () => { energy = backup; save(K.energy, energy); renderEnergyTable(); if ($('page-energy').classList.contains('active')) renderEnergyCharts(); });
 }
 
 function editEnergy(idx) {
@@ -1668,27 +1580,69 @@ function editEnergy(idx) {
 }
 
 /* ── CHARTS ROW ── */
-const months = ['12월','1월','2월','3월','4월','5월'];
-new Chart($('bar-chart'), {
-  type: 'bar',
-  data: {
-    labels: months,
-    datasets: [
-      { label:'완료', data:[14,11,18,16,20,21], backgroundColor:'#3b82f6', borderRadius:4 },
-      { label:'미착수/진행', data:[4,5,3,4,2,2], backgroundColor:'#fca5a5', borderRadius:4 }
-    ]
-  },
-  options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(0,0,0,0.05)'}} } }
-});
+function getLastSixMonths() {
+  const result = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    result.push({
+      label: (d.getMonth() + 1) + '월',
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    });
+  }
+  return result;
+}
 
-new Chart($('line-chart'), {
-  type: 'line',
-  data: {
-    labels: months,
-    datasets: [{ label:'절감 누적', data:[35,67,112,195,320,405], borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.08)', fill:true, tension:0.4 }]
-  },
-  options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(0,0,0,0.05)'}} } }
-});
+let barChart = null;
+function renderBarChart() {
+  const monthData = getLastSixMonths();
+  const labels = monthData.map(m => m.label);
+  const doneCounts = monthData.map(m =>
+    tasks.filter(t => t.date && t.date.startsWith(m.key) && t.status === '완료').length
+  );
+  const notDoneCounts = monthData.map(m =>
+    tasks.filter(t => t.date && t.date.startsWith(m.key) && t.status !== '완료').length
+  );
+  if (barChart) {
+    barChart.data.labels = labels;
+    barChart.data.datasets[0].data = doneCounts;
+    barChart.data.datasets[1].data = notDoneCounts;
+    barChart.update();
+  } else {
+    barChart = new Chart($('bar-chart'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label:'완료', data: doneCounts, backgroundColor:'#3b82f6', borderRadius:4 },
+          { label:'미착수/진행', data: notDoneCounts, backgroundColor:'#fca5a5', borderRadius:4 }
+        ]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(0,0,0,0.05)'}, ticks:{stepSize:1}} } }
+    });
+  }
+}
+
+let lineChart = null;
+function renderLineChart() {
+  const labels = costs.map(c => c.name.length > 8 ? c.name.slice(0, 8) + '…' : c.name);
+  let running = 0;
+  const data = costs.map(c => { running += Math.round((c.orig - c.final) / 10000); return running; });
+  if (lineChart) {
+    lineChart.data.labels = labels;
+    lineChart.data.datasets[0].data = data;
+    lineChart.update();
+  } else {
+    lineChart = new Chart($('line-chart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{ label:'절감 누적(만원)', data, borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.08)', fill:true, tension:0.4 }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{display:false}, ticks:{maxRotation:30, font:{size:10}}}, y:{grid:{color:'rgba(0,0,0,0.05)'}} } }
+    });
+  }
+}
 
 let donutChart = null;
 function updateDonut() {
@@ -1713,8 +1667,6 @@ function updateDonut() {
     });
   }
 }
-window.addEventListener('DOMContentLoaded', updateDonut);
-
 let chartElec = null, chartWaterGas = null;
 function renderEnergyCharts() {
   const labels = energy.map(e => e.month); const dataElec = energy.map(e => e.elec);
@@ -1744,35 +1696,65 @@ function renderEnergyCharts() {
 }
 
 /* ── REPORT ── */
+let selectedReportMonth = 0; // 0 = 전체
+
+function setReportMonth(m) {
+  selectedReportMonth = m;
+  document.querySelectorAll('.period-month-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === m);
+  });
+  renderReport();
+}
+
 function renderReport() {
-  const total = tasks.length, done = tasks.filter(t => t.status === '완료').length;
+  const monthLabel = selectedReportMonth === 0 ? '월간' : selectedReportMonth + '월';
+  $('rpt-title').textContent = `드림솔 시설관리 ${monthLabel} 성과 요약`;
+
+  const filterByMonth = arr => selectedReportMonth === 0 ? arr : arr.filter(item => {
+    const d = item.date || '';
+    return parseInt(d.split('-')[1]) === selectedReportMonth;
+  });
+
+  const filteredTasks = filterByMonth(tasks);
+  const filteredCosts = filterByMonth(costs);
+
+  const total = filteredTasks.length, done = filteredTasks.filter(t => t.status === '완료').length;
   const rate = total ? Math.round((done / total) * 100) : 0;
   $('rpt-rate').textContent = rate + '%';
 
-  const totalSave = costs.reduce((sum, c) => sum + (c.orig - c.final), 0);
+  const totalSave = filteredCosts.reduce((sum, c) => sum + (c.orig - c.final), 0);
   $('rpt-save').textContent = '₩' + fmt(totalSave);
 
   const complianceTotal = ddays.length, complianceCompleted = ddays.filter(d => d.completed).length;
   const complianceRate = complianceTotal ? Math.round((complianceCompleted / complianceTotal) * 100) : 0;
   $('rpt-compliance').innerHTML = complianceRate + '<span>%</span>';
 
-  const eqTotal = equipment.length;
-  const eqRate = eqTotal ? Math.round(equipment.reduce((sum,e)=> sum + (e.totalDays ? (e.runDays/e.totalDays)*100 : 0), 0) / eqTotal) : 0;
-  $('rpt-uptime').innerHTML = eqRate + '<span>%</span>';
-
   const rtb = $('report-tasks'); rtb.innerHTML = '';
-  tasks.slice(0, 10).forEach(t => {
+  filteredTasks.slice(0, 10).forEach(t => {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${t.type}</td><td>${t.detail}</td><td>${t.loc}</td><td>${t.vendor||'—'}</td><td><span class="badge ${t.status==='완료'?'b-done':'b-wip'}">${t.status}</span></td>`;
     rtb.appendChild(tr);
   });
 
   const rcb = $('report-costs'); rcb.innerHTML = '';
-  costs.forEach(c => {
+  filteredCosts.forEach(c => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${c.name}</td><td>₩${fmt(c.orig)}</td><td>₩${fmt(c.final)}</td><td class="cost-save-val">▲ ₩${fmt(c.orig-c.final)}</td><td style="font-size:11px">${c.note}</td>`;
+    tr.innerHTML = `<td>${c.name}</td><td style="color:var(--sub)">${c.dept||'—'}</td><td style="color:var(--sub);font-size:11px">${c.date||'—'}</td><td>₩${fmt(c.orig)}</td><td>₩${fmt(c.final)}</td><td class="cost-save-val">▲ ₩${fmt(c.orig-c.final)}</td><td style="font-size:11px">${c.note}</td>`;
     rcb.appendChild(tr);
   });
+  const totalOrig = filteredCosts.reduce((s,c) => s+c.orig, 0);
+  const totalFinal = filteredCosts.reduce((s,c) => s+c.final, 0);
+  const totalSaved = totalOrig - totalFinal;
+  const tf = $('report-costs-total'); tf.innerHTML = '';
+  tf.innerHTML = `<tr style="background:#1a2744;font-weight:700">
+      <td style="padding:8px 6px;border:1px solid #334155;color:#fff">합 계</td>
+      <td style="padding:8px 6px;border:1px solid #334155;color:#fff">—</td>
+      <td style="padding:8px 6px;border:1px solid #334155;color:#fff">—</td>
+      <td style="padding:8px 6px;border:1px solid #334155;color:#fff">₩${fmt(totalOrig)}</td>
+      <td style="padding:8px 6px;border:1px solid #334155;color:#fff">₩${fmt(totalFinal)}</td>
+      <td style="padding:8px 6px;border:1px solid #334155;color:#fbbf24">▲ ₩${fmt(totalSaved)}</td>
+      <td style="padding:8px 6px;border:1px solid #334155;color:#fff">—</td>
+    </tr>`;
 
   const rdb = $('report-ddays'); rdb.innerHTML = '';
   ddays.forEach(d => {
@@ -1799,17 +1781,13 @@ function exportToExcel(type) {
       ddays.forEach(d => data.push([d.name, d.date, d.completed?'완료':'미완료']));
       filename = '법정점검일정'; break;
     case 'cost':
-      data = [['공사명', '최초견적', '최종실행가', '절감액', '사유']];
-      costs.forEach(c => data.push([c.name, c.orig, c.final, c.orig - c.final, c.note]));
+      data = [['공사명', '요청부서', '최초견적', '최종실행가', '절감액', '사유']];
+      costs.forEach(c => data.push([c.name, c.dept||'', c.orig, c.final, c.orig - c.final, c.note]));
       filename = '비용절감실적'; break;
     case 'vendor':
       data = [['업체명', '공사유형', '평점', '평가내용']];
       vendors.forEach(v => data.push([v.name, v.type, v.star, v.note]));
       filename = '업체평가'; break;
-    case 'equipment':
-      data = [['설비명', '위치', '측정일수', '가동일수', '가동률']];
-      equipment.forEach(e => { const rate = e.totalDays ? Math.round((e.runDays/e.totalDays)*100) : 0; data.push([e.name, e.loc, e.totalDays, e.runDays, rate+'%']); });
-      filename = '설비가동률'; break;
     case 'consumable':
       data = [['소모품명', '교체주기', '현재사용', '남은시간', '상태']];
       consumables.forEach(c => { const progress = Math.round((c.used / c.cycle) * 100); data.push([c.name, c.cycle, c.used, c.cycle - c.used, progress + '%']); });
@@ -1822,22 +1800,18 @@ function exportToExcel(type) {
       const now = new Date();
       data = [
         ['드림솔 시설관리 월간 성과 요약'],
-        ['보고기간', now.getFullYear() + '년 ' + (now.getMonth()+1) + '월'],
-        ['담당자', '준서'],
-        ['보고일', now.getFullYear() + '.' + (now.getMonth()+1) + '.' + now.getDate()],
         [],
         ['핵심 성과 지표', ''],
         ['업무 완료율', $('rpt-rate').textContent],
         ['누적 비용 절감', $('rpt-save').textContent],
         ['법정점검 준수율', $('rpt-compliance').textContent],
-        ['설비 가동률', $('rpt-uptime').textContent],
         [],
         ['업무 완료 내역', '', '', '', ''],
         ['구분', '내역', '위치', '업체', '상태']
       ];
       tasks.forEach(t => { data.push([t.type, t.detail, t.loc, t.vendor, t.status]); });
-      data.push([]); data.push(['비용 절감 실적', '', '', '', '']); data.push(['공사명', '최초견적', '실행가', '절감액', '절감사유']);
-      costs.forEach(c => { data.push([c.name, c.orig, c.final, c.orig - c.final, c.note]); });
+      data.push([]); data.push(['비용 절감 실적', '', '', '', '', '']); data.push(['공사명', '요청부서', '최초견적', '실행가', '절감액', '절감사유']);
+      costs.forEach(c => { data.push([c.name, c.dept||'', c.orig, c.final, c.orig - c.final, c.note]); });
       filename = '성과리포트'; break;
   }
   const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new();
@@ -1845,9 +1819,21 @@ function exportToExcel(type) {
 }
 
 /* ── TOAST ── */
+let toastTimer = null;
 function showToast(msg) {
-  const t = $('toast'); t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  const t = $('toast'), m = $('toast-msg'), u = $('toast-undo');
+  m.textContent = msg; u.style.display = 'none';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+function showDeleteToast(msg, undoFn) {
+  const t = $('toast'), m = $('toast-msg'), u = $('toast-undo');
+  m.textContent = msg; u.style.display = 'inline-block';
+  u.onclick = () => { undoFn(); t.classList.remove('show'); showToast('삭제가 취소되었습니다.'); };
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
 }
 </script>
 </body>
